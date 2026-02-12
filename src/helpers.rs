@@ -26,3 +26,45 @@ pub fn format_string_isc(source: &str) -> String {
 
     output
 }
+
+#[cfg(test)]
+mod tests {
+    use rstest::rstest;
+
+    use super::{format_string_isc, hex_to_ascii};
+
+    #[rstest]
+    #[case(
+        String::from("0x525241532e4d6963726f736f6674"),
+        String::from("RRAS.Microsoft")
+    )]
+    #[case(
+        String::from("0x424f4f54502e4d6963726f736f6674"),
+        String::from("BOOTP.Microsoft")
+    )]
+    #[case(String::from("0x4d53465420352e30"), String::from("MSFT 5.0"))]
+    #[case(String::from("0x4d534654203938"), String::from("MSFT 98"))]
+    fn hex_to_ascii_test(#[case] source: String, #[case] output: String) {
+        assert_eq!(hex_to_ascii(&source), output);
+    }
+
+    #[test]
+    #[should_panic]
+    fn hex_to_ascii_test_panic() {
+        let a = hex_to_ascii("$R!@RFFQ@WGWSAEGASEGE");
+        assert_eq!("100", a);
+    }
+
+    #[rstest]
+    #[case(
+        String::from("Default Routing and Remote Access Class"),
+        String::from("default-routing-and-remote-access-class")
+    )]
+    #[case(
+        String::from(" STRING WITH SPACES IN START AND END "),
+        String::from("string-with-spaces-in-start-and-end")
+    )]
+    fn format_string_isc_test(#[case] source: String, #[case] output: String) {
+        assert_eq!(format_string_isc(&source), output);
+    }
+}
