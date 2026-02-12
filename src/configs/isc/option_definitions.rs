@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(test, derive(PartialEq))]
 #[serde(rename_all = "lowercase")]
 pub enum ISCOptionDefinitionType {
     Boolean,
@@ -32,6 +33,7 @@ pub enum ISCOptionDefinitionType {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(test, derive(PartialEq))]
 pub struct ISCOptionDefinition {
     pub code: u8,
     pub name: String,

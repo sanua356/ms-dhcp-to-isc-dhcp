@@ -72,3 +72,37 @@ impl ISCDHCP {
         self.option_definitions.extend(option_defs);
     }
 }
+
+#[cfg(test)]
+mod _tests;
+
+#[cfg(test)]
+mod test {
+    use quick_xml::de::from_str;
+
+    use super::_tests::{
+        OPTION_DEFINITIONS_ISC_TEST_TEMPLATE, OPTION_DEFINITIONS_XML_TEST_TEMPLATE,
+    };
+
+    use crate::configs::{ISCDHCP, microsoft::MicrosoftOptionDefinition};
+
+    #[test]
+    fn transform_option_definitions_test() {
+        let data: Vec<MicrosoftOptionDefinition> =
+            from_str(OPTION_DEFINITIONS_XML_TEST_TEMPLATE).unwrap();
+
+        let mut isc_config: ISCDHCP = ISCDHCP::default();
+        isc_config.transform_option_definitions(&data);
+
+        for (idx, item) in isc_config.option_definitions.iter().enumerate() {
+            if item != &OPTION_DEFINITIONS_ISC_TEST_TEMPLATE[idx] {
+                panic!(
+                    "{:?}, {:?}",
+                    item, OPTION_DEFINITIONS_ISC_TEST_TEMPLATE[idx]
+                );
+            }
+        }
+
+        assert!(true);
+    }
+}

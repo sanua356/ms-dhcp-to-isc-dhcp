@@ -12,3 +12,12 @@ pub struct ISCDHCP {
     pub option_definitions: Vec<option_definitions::ISCOptionDefinition>,
     pub classes: Vec<classes::ISCClass>,
 }
+
+impl ISCDHCP {
+    pub fn default() -> Self {
+        ISCDHCP {
+            option_definitions: vec![],
+            classes: vec![],
+        }
+    }
+}

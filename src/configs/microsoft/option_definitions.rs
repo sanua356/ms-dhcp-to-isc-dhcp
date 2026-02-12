@@ -23,6 +23,7 @@ pub enum MicrosoftOptionDefinitionType {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename = "Class", rename_all = "PascalCase")]
+#[cfg_attr(test, derive(PartialEq))]
 pub struct MicrosoftOptionDefinition {
     pub name: String,
     pub option_id: u8,

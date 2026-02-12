@@ -13,10 +13,7 @@ fn main() {
     let config_data: String = fs::read_to_string("dhcp2016.xml").unwrap();
     let microsoft_config: MicrosoftDHCP = from_str(&config_data).unwrap();
 
-    let mut isc_config: ISCDHCP = ISCDHCP {
-        option_definitions: vec![],
-        classes: vec![],
-    };
+    let mut isc_config: ISCDHCP = ISCDHCP::default();
 
     isc_config
         .transform_option_definitions(&microsoft_config.ipv4.option_definitions.unwrap().items);
