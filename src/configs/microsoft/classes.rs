@@ -2,6 +2,8 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::validators::validate_hex_string_optional;
+
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub enum MicrosoftClassType {
     User,
@@ -13,6 +15,7 @@ pub enum MicrosoftClassType {
 pub struct MicrosoftClass {
     pub name: String,
     pub r#type: MicrosoftClassType,
+    #[serde(deserialize_with = "validate_hex_string_optional")]
     pub data: Option<String>,
     pub description: Option<String>,
 }

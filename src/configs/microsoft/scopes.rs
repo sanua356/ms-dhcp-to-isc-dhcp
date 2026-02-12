@@ -36,7 +36,7 @@ pub struct MicrosoftExclusionRanges {
 pub struct MicrosoftResevation {
     pub name: Option<String>,
     #[serde(rename = "IPAddress")]
-    pub ip_address: String,
+    pub ip_address: Ipv4Addr,
     pub client_id: String,
     pub r#type: MicrosoftScopeType,
     pub description: Option<String>,

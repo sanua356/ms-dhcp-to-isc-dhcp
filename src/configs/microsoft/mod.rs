@@ -9,6 +9,9 @@ mod option_values;
 mod policies;
 mod scopes;
 
+pub use classes::*;
+pub use option_definitions::*;
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct MicrosoftIPv4 {
@@ -25,6 +28,7 @@ pub struct MicrosoftIPv4 {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
 pub struct MicrosoftDHCP {
     pub major_version: u32,
     pub minor_version: u32,

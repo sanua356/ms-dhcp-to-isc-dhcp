@@ -17,7 +17,7 @@ pub enum ISCOptionDefinitionType {
     #[serde(rename = "unsigned integer 32")]
     UInt32,
     #[serde(rename = "ip-address")]
-    IPAddress,
+    IPv4Address,
     #[serde(rename = "ip6-address")]
     IPv6Address,
     Text,
@@ -28,7 +28,7 @@ pub enum ISCOptionDefinitionType {
     Encapsulate,
     #[serde(rename = "array of")]
     Arrays(Box<ISCOptionDefinitionType>),
-    Records(Vec<Box<ISCOptionDefinitionType>>),
+    Records(Vec<ISCOptionDefinitionType>),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -36,4 +36,6 @@ pub struct ISCOptionDefinition {
     pub code: u8,
     pub name: String,
     pub r#type: ISCOptionDefinitionType,
+
+    pub vendor_class: Option<String>,
 }

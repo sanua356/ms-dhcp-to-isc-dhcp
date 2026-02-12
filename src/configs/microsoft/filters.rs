@@ -2,6 +2,8 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::validators::validate_mac_address_string;
+
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub enum MicrosoftFilterListType {
     Allow,
@@ -12,16 +14,17 @@ pub enum MicrosoftFilterListType {
 #[serde(rename = "Filter", rename_all = "PascalCase")]
 pub struct MicrosoftFilter {
     pub list: MicrosoftFilterListType,
-    pub mac_addresses: String,
+    #[serde(deserialize_with = "validate_mac_address_string")]
+    pub mac_address: String,
     pub description: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename = "Filters", rename_all = "PascalCase")]
 pub struct MicrosoftFilters {
-    #[serde(rename = "Filter")]
     pub allow: bool,
     pub deny: bool,
 
+    #[serde(rename = "Filter")]
     pub items: Vec<MicrosoftFilter>,
 }

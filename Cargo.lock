@@ -15,10 +15,17 @@ dependencies = [
 name = "dhcp-ms-to-isc-dhcp"
 version = "0.1.0"
 dependencies = [
+ "lazy_static",
  "quick-xml",
  "regex",
  "serde",
 ]
+
+[[package]]
+name = "lazy_static"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
 
 [[package]]
 name = "memchr"
@@ -42,6 +49,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f2e3bf4aa9d243beeb01a7b3bc30b77cfe2c44e24ec02d751a7104a53c2c49a1"
 dependencies = [
  "memchr",
+ "serde",
 ]
 
 [[package]]

@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 pub enum MicrosoftOptionDefinitionType {
     String,
     IPv4Address,
+    IPv6Address,
     BinaryData,
     EncapsulatedData,
     Byte,
@@ -14,13 +15,19 @@ pub enum MicrosoftOptionDefinitionType {
     DWordDWord,
 }
 
+// Numeric types (All unsigned)
+// Byte = 1 byte
+// Word = 2 bytes
+// DWord = 4 bytes
+// DWordDWord = 8 bytes
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename = "Class", rename_all = "PascalCase")]
 pub struct MicrosoftOptionDefinition {
     pub name: String,
-    pub option_id: u32,
+    pub option_id: u8,
     pub r#type: MicrosoftOptionDefinitionType,
-    pub default_value: Option<String>,
+    pub default_value: Option<Vec<String>>,
     pub description: Option<String>,
     pub vendor_class: Option<String>,
     pub multi_valued: Option<bool>,
