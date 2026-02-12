@@ -769,3 +769,42 @@ pub static NO_CONFIGURABLE_V4_ISC_OPTION_DEFINITIONS: LazyLock<Vec<ISCOptionDefi
             },
         ]
     });
+
+#[cfg(test)]
+mod test {
+    use rstest::rstest;
+
+    use super::{BYTES_WITH_PREFIX_REGEXP, MAC_ADDRESS_REGEXP};
+
+    #[rstest]
+    #[case("0x112233")]
+    #[case("0xAABBCC11")]
+    #[case("0xaaBBcc22")]
+    fn bytes_with_prefix_string_regexp_match_test(#[case] source: &str) {
+        assert!(BYTES_WITH_PREFIX_REGEXP.is_match(source));
+    }
+
+    #[rstest]
+    #[case("112233")]
+    #[case("0xTTTQQQ")]
+    fn bytes_with_prefix_string_regexp_not_match_test(#[case] source: &str) {
+        assert!(!BYTES_WITH_PREFIX_REGEXP.is_match(source));
+    }
+
+    #[rstest]
+    #[case("11-22-33-44-55-66")]
+    #[case("AA-BB-CC-DD-EE-FF")]
+    #[case("AA-bb-cc-DD-11-22")]
+    fn mac_address_string_regexp_match_test(#[case] source: &str) {
+        assert!(MAC_ADDRESS_REGEXP.is_match(source));
+    }
+
+    #[rstest]
+    #[case("11-66")]
+    #[case("AA:BB:CC:DD-EE-FF")]
+    #[case("QQ-WW-EE-RR-TT-YY")]
+    #[case("Q-W-E-R-T-Y")]
+    fn mac_address_string_regexp_not_match_test(#[case] source: &str) {
+        assert!(!MAC_ADDRESS_REGEXP.is_match(source));
+    }
+}
