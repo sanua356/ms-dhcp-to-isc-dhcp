@@ -35,3 +35,31 @@ impl ISCDHCP {
         self.classes.extend(classes);
     }
 }
+
+#[cfg(test)]
+mod _tests;
+
+#[cfg(test)]
+mod test {
+    use quick_xml::de::from_str;
+
+    use super::_tests::{CLASSES_ISC_TEST_TEMPLATE, CLASSES_XML_TEST_TEMPLATE};
+
+    use crate::configs::{ISCDHCP, microsoft::MicrosoftClass};
+
+    #[test]
+    fn transform_classes_test() {
+        let data: Vec<MicrosoftClass> = from_str(CLASSES_XML_TEST_TEMPLATE).unwrap();
+
+        let mut isc_config: ISCDHCP = ISCDHCP::default();
+        isc_config.transform_classes(&data);
+
+        for (idx, item) in isc_config.classes.iter().enumerate() {
+            if item != &CLASSES_ISC_TEST_TEMPLATE[idx] {
+                panic!("{:?}, {:?}", item, CLASSES_ISC_TEST_TEMPLATE[idx]);
+            }
+        }
+
+        assert!(true);
+    }
+}
