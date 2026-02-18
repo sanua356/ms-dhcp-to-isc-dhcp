@@ -30,12 +30,32 @@ where
     }
 }
 
+pub fn validate_string_optional<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let opt = Option::<String>::deserialize(deserializer)?;
+    match opt {
+        Some(ref value) => {
+            if !value.is_empty() {
+                Ok(opt)
+            } else {
+                Ok(None)
+            }
+        }
+
+        _ => Ok(opt),
+    }
+}
+
 #[cfg(test)]
 mod test {
     use quick_xml::de::from_str;
     use serde::Deserialize;
 
-    use super::{validate_hex_string_optional, validate_mac_address_string};
+    use super::{
+        validate_hex_string_optional, validate_mac_address_string, validate_string_optional,
+    };
 
     #[derive(Deserialize)]
     struct TestValidateHEXOptional {
@@ -49,6 +69,13 @@ mod test {
         #[serde(deserialize_with = "validate_mac_address_string")]
         #[serde(rename = "Field")]
         field: String,
+    }
+
+    #[derive(Deserialize)]
+    struct TestValidateStringOptional {
+        #[serde(deserialize_with = "validate_string_optional")]
+        #[serde(rename = "Field")]
+        field: Option<String>,
     }
 
     #[test]
@@ -95,5 +122,31 @@ mod test {
                 "Invalid format for MAC address string: INCORRECT MAC"
             );
         }
+    }
+
+    #[test]
+    fn validate_filled_string_optional_test() {
+        const TEST_TEMPLATE: &'static str = r#"<TestValidateStringOptional>
+                <Field>12345</Field>
+            </TestValidateStringOptional> "#;
+        let x: TestValidateStringOptional = from_str(TEST_TEMPLATE).unwrap();
+        assert_eq!(x.field, Some(String::from("12345")));
+    }
+
+    #[test]
+    fn validate_empty_string_optional_test() {
+        const TEST_TEMPLATE: &'static str = r#"<TestValidateHEXOptional>
+                <Field/>
+        </TestValidateHEXOptional> "#;
+
+        let x: TestValidateStringOptional = from_str(TEST_TEMPLATE).unwrap();
+        assert_eq!(x.field, None);
+
+        const TEST_TEMPLATE2: &'static str = r#"<TestValidateHEXOptional>
+                <Field></Field>
+        </TestValidateHEXOptional> "#;
+
+        let x2: TestValidateStringOptional = from_str(TEST_TEMPLATE2).unwrap();
+        assert_eq!(x2.field, None);
     }
 }

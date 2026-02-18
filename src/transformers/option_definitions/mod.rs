@@ -13,7 +13,9 @@ fn get_isc_option_compat(option_type: &MicrosoftOptionDefinitionType) -> ISCOpti
     match option_type {
         MicrosoftOptionDefinitionType::IPv4Address => ISCOptionDefinitionType::IPv4Address,
         MicrosoftOptionDefinitionType::IPv6Address => ISCOptionDefinitionType::IPv6Address,
-        MicrosoftOptionDefinitionType::EncapsulatedData => ISCOptionDefinitionType::Encapsulate,
+        MicrosoftOptionDefinitionType::EncapsulatedData => {
+            ISCOptionDefinitionType::Encapsulate(String::new())
+        }
         MicrosoftOptionDefinitionType::BinaryData => ISCOptionDefinitionType::Text,
         MicrosoftOptionDefinitionType::String => ISCOptionDefinitionType::DataString,
         MicrosoftOptionDefinitionType::Byte => ISCOptionDefinitionType::UInt8,
@@ -54,7 +56,7 @@ impl ISCDHCP {
             let option_vendor_class: Option<String> = ms_option_def
                 .vendor_class
                 .as_ref()
-                .map(|vendor_class| format_string_isc(vendor_class));
+                .map(|vendor_class| format!("{}-SPACE", format_string_isc(vendor_class)));
 
             if ms_option_def.multi_valued.unwrap_or_default() {
                 option_type = ISCOptionDefinitionType::Arrays(Box::new(option_type));
@@ -70,6 +72,21 @@ impl ISCDHCP {
             option_defs.push(option);
         }
         self.option_definitions.extend(option_defs);
+    }
+
+    pub fn write_transformed_option_definitions(&self, config: &mut String) {
+        for class in self.classes.iter() {
+            let class_space = format!(
+                r#"option space {}-SPACE;
+"#,
+                class.name
+            );
+            config.push_str(class_space.as_str());
+        }
+
+        for option_definition in self.option_definitions.iter() {
+            config.push_str(option_definition.to_string().as_str());
+        }
     }
 }
 

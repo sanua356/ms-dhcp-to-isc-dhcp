@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 mod classes;
 mod filters;
@@ -12,7 +12,7 @@ mod scopes;
 pub use classes::*;
 pub use option_definitions::*;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct MicrosoftIPv4 {
     pub conflict_detection_attempts: i32,
@@ -27,7 +27,7 @@ pub struct MicrosoftIPv4 {
     pub scopes: Option<scopes::MicrosoftScopesV4>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct MicrosoftDHCP {
     pub major_version: u32,

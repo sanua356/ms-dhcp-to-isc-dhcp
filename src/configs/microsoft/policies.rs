@@ -1,17 +1,19 @@
 #![allow(dead_code)]
 #![allow(clippy::upper_case_acronyms)]
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use super::option_values::MicrosoftOptionValues;
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+use crate::validators::validate_string_optional;
+
+#[derive(Debug, Deserialize, PartialEq)]
 pub enum MicrosoftPolicyConditionType {
     AND,
     OR,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename = "Policy", rename_all = "PascalCase")]
 pub struct MicrosoftPolicy {
     pub name: String,
@@ -19,6 +21,7 @@ pub struct MicrosoftPolicy {
     pub enabled: bool,
     pub condition: MicrosoftPolicyConditionType,
     pub description: Option<bool>,
+    #[serde(deserialize_with = "validate_string_optional")]
     pub dns_suffix: Option<String>,
     pub option_values: Option<MicrosoftOptionValues>,
 
@@ -33,7 +36,7 @@ pub struct MicrosoftPolicy {
     pub fqdn: Option<Vec<String>>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename = "Policies")]
 pub struct MicrosoftPolicies {
     #[serde(rename = "Policy")]

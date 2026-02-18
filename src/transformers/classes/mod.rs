@@ -15,24 +15,28 @@ impl ISCDHCP {
             let class_data =
                 hex_to_ascii(ms_class.data.as_ref().unwrap_or(&String::new()).as_str());
             let class_condition = match ms_class.r#type {
-                MicrosoftClassType::User => {
-                    format!(
-                        "match if option vendor-class-identifier = \"{}\";",
-                        class_data
-                    )
-                }
                 MicrosoftClassType::Vendor => {
-                    format!("match if option user-class = \"{}\";", class_data)
+                    format!("if option vendor-class-identifier = \"{}\"", class_data)
+                }
+                MicrosoftClassType::User => {
+                    format!("if option user-class = \"{}\"", class_data)
                 }
             };
 
             classes.push(ISCClass {
-                name: class_name,
+                name: class_name.clone(),
                 condition: class_condition,
+                vendor_option_space: Some(format!("{}-SPACE", class_name)),
             });
         }
 
         self.classes.extend(classes);
+    }
+
+    pub fn write_transformed_classes(&self, config: &mut String) {
+        for class in self.classes.iter() {
+            config.push_str(class.to_string().as_str());
+        }
     }
 }
 

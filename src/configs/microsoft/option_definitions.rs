@@ -1,8 +1,10 @@
 #![allow(dead_code)]
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+use crate::validators::validate_string_optional;
+
+#[derive(Debug, Deserialize, PartialEq)]
 pub enum MicrosoftOptionDefinitionType {
     String,
     IPv4Address,
@@ -21,7 +23,7 @@ pub enum MicrosoftOptionDefinitionType {
 // DWord = 4 bytes
 // DWordDWord = 8 bytes
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename = "Class", rename_all = "PascalCase")]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct MicrosoftOptionDefinition {
@@ -29,12 +31,14 @@ pub struct MicrosoftOptionDefinition {
     pub option_id: u8,
     pub r#type: MicrosoftOptionDefinitionType,
     pub default_value: Option<Vec<String>>,
+    #[serde(deserialize_with = "validate_string_optional")]
     pub description: Option<String>,
+    #[serde(deserialize_with = "validate_string_optional")]
     pub vendor_class: Option<String>,
     pub multi_valued: Option<bool>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename = "OptionDefinitions")]
 pub struct MicrosoftOptionDefinitions {
     #[serde(rename = "OptionDefinition")]

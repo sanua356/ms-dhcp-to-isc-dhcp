@@ -19,5 +19,11 @@ fn main() {
         .transform_option_definitions(&microsoft_config.ipv4.option_definitions.unwrap().items);
     isc_config.transform_classes(&microsoft_config.ipv4.classes.unwrap().items);
 
-    println!("{:?}", isc_config);
+    let mut x = String::new();
+    isc_config.write_transformed_option_definitions(&mut x);
+    isc_config.write_transformed_classes(&mut x);
+
+    fs::write("output.conf", x).unwrap();
+
+    println!("Config transformed successfully!");
 }
