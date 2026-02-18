@@ -67,9 +67,7 @@ pub struct ISCOptionDefinition {
     pub vendor_class: Option<String>,
 }
 
-const SERIALIZER_TEMPLATE: &str = r#"
-option {name} code {code} = {type};
-"#;
+const SERIALIZER_TEMPLATE: &str = r#"option {name} code {code} = {type};"#;
 
 impl Display for ISCOptionDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

@@ -12,6 +12,8 @@ lazy_static! {
         Regex::new(r"^[0-9A-Fa-f]{2}([-][0-9A-Fa-f]{2}){5}$").unwrap();
 }
 
+pub static DEFAULT_PADDING: &str = "\n\n";
+
 // Information about the declared options is taken from the ISC DHCP documentation, KEA Docs and many RFCs
 pub static STANDARD_V4_ISC_OPTION_DEFINITIONS: LazyLock<Vec<ISCOptionDefinition>> =
     LazyLock::new(|| {

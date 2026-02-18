@@ -35,3 +35,21 @@ pub static CLASSES_ISC_TEST_TEMPLATE: LazyLock<Vec<ISCClass>> = LazyLock::new(||
         },
     ]
 });
+
+#[cfg(test)]
+pub static CLASSES_TRANSFORMED_TEST_TEMPLATE: &str = r#"
+class "default-routing-and-remote-access-class" {
+	match if option user-class = "RRAS.Microsoft";
+	vendor-option-space default-routing-and-remote-access-class;
+}
+class "microsoft-windows-2000-options" {
+	match if option vendor-class-identifier = "MSFT 5.0";
+	vendor-option-space microsoft-windows-2000-options;
+}
+"#;
+
+#[cfg(test)]
+pub static SPACES_TRANSFORMED_TEST_TEMPLATE: &str = r#"
+option space default-routing-and-remote-access-class;
+option space microsoft-windows-2000-options;
+"#;

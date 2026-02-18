@@ -1,7 +1,10 @@
 use quick_xml::de::from_str;
 use std::fs;
 
-use crate::configs::{ISCDHCP, MicrosoftDHCP};
+use crate::{
+    configs::{ISCDHCP, MicrosoftDHCP},
+    constants::DEFAULT_PADDING,
+};
 
 mod configs;
 mod constants;
@@ -20,7 +23,10 @@ fn main() {
     isc_config.transform_classes(&microsoft_config.ipv4.classes.unwrap().items);
 
     let mut x = String::new();
+    isc_config.write_transformed_classes_to_spaces(&mut x);
+    x.push_str(DEFAULT_PADDING);
     isc_config.write_transformed_option_definitions(&mut x);
+    x.push_str(DEFAULT_PADDING);
     isc_config.write_transformed_classes(&mut x);
 
     fs::write("output.conf", x).unwrap();

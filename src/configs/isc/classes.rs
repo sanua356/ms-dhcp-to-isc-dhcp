@@ -9,8 +9,7 @@ pub struct ISCClass {
     pub vendor_option_space: Option<String>,
 }
 
-const SERIALIZER_TEMPLATE: &str = r#"
-class "{name}" {
+const SERIALIZER_TEMPLATE: &str = r#"class "{name}" {
 	match {condition};
 	vendor-option-space {vendor_option_space};
 }

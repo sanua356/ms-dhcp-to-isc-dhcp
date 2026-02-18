@@ -1,13 +1,15 @@
 #![allow(dead_code)]
 
-use crate::configs::{
-    isc::{ISCDHCP, ISCOptionDefinition, ISCOptionDefinitionType},
-    microsoft::{MicrosoftOptionDefinition, MicrosoftOptionDefinitionType},
-};
 use crate::constants::{
     NO_CONFIGURABLE_V4_ISC_OPTION_DEFINITIONS, STANDARD_V4_ISC_OPTION_DEFINITIONS,
 };
-use crate::helpers::format_string_isc;
+use crate::{
+    configs::{
+        isc::{ISCDHCP, ISCOptionDefinition, ISCOptionDefinitionType},
+        microsoft::{MicrosoftOptionDefinition, MicrosoftOptionDefinitionType},
+    },
+    helpers::format_string_isc,
+};
 
 fn get_isc_option_compat(option_type: &MicrosoftOptionDefinitionType) -> ISCOptionDefinitionType {
     match option_type {
@@ -61,35 +63,31 @@ impl ISCDHCP {
                 .as_ref()
                 .map(|vendor_class| format_string_isc(vendor_class));
 
+            // If the option supports writing multiple values,
+            // it needs to replace the original type.
             if ms_option_def.multi_valued.unwrap_or_default() {
                 option_type = ISCOptionDefinitionType::Arrays(Box::new(option_type));
             }
 
-            let option = ISCOptionDefinition {
+            let option_def = ISCOptionDefinition {
                 code: ms_option_def.option_id,
                 name: option_name,
                 r#type: option_type,
                 vendor_class: option_vendor_class,
             };
 
-            option_defs.push(option);
+            option_defs.push(option_def);
         }
         self.option_definitions.extend(option_defs);
     }
 
     pub fn write_transformed_option_definitions(&self, config: &mut String) {
-        for class in self.classes.iter() {
-            let class_space = format!(
-                r#"option space {}-SPACE;
-"#,
-                class.name
-            );
-            config.push_str(class_space.as_str());
-        }
-
-        for option_definition in self.option_definitions.iter() {
-            config.push_str(option_definition.to_string().as_str());
-        }
+        let option_defs: Vec<String> = self
+            .option_definitions
+            .iter()
+            .map(|item| item.to_string())
+            .collect();
+        config.push_str(option_defs.join("\n").as_str());
     }
 }
 
@@ -104,7 +102,10 @@ mod test {
         OPTION_DEFINITIONS_ISC_TEST_TEMPLATE, OPTION_DEFINITIONS_XML_TEST_TEMPLATE,
     };
 
-    use crate::configs::{ISCDHCP, microsoft::MicrosoftOptionDefinition};
+    use crate::{
+        configs::{ISCDHCP, microsoft::MicrosoftOptionDefinition},
+        transformers::option_definitions::_tests::OPTION_DEFINITIONS_TRANSFORMED_TEST_TEMPLATE,
+    };
 
     #[test]
     fn transform_option_definitions_test() {
@@ -124,5 +125,22 @@ mod test {
         }
 
         assert!(true);
+    }
+
+    #[test]
+    fn write_transformed_option_definitions() {
+        let data: Vec<MicrosoftOptionDefinition> =
+            from_str(OPTION_DEFINITIONS_XML_TEST_TEMPLATE).unwrap();
+
+        let mut x = String::new();
+
+        let mut isc_config: ISCDHCP = ISCDHCP::default();
+        isc_config.transform_option_definitions(&data);
+        isc_config.write_transformed_option_definitions(&mut x);
+
+        assert_eq!(
+            x.trim(),
+            OPTION_DEFINITIONS_TRANSFORMED_TEST_TEMPLATE.trim()
+        );
     }
 }
