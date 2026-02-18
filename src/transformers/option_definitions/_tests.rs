@@ -88,7 +88,7 @@ pub static OPTION_DEFINITIONS_ISC_TEST_TEMPLATE: LazyLock<Vec<ISCOptionDefinitio
                 code: 181,
                 name: String::from("byteoption"),
                 r#type: ISCOptionDefinitionType::UInt8,
-                vendor_class: Some(String::from("test_vendor_class-SPACE")),
+                vendor_class: Some(String::from("test_vendor_class")),
             },
             ISCOptionDefinition {
                 code: 182,
@@ -129,7 +129,7 @@ pub static OPTION_DEFINITIONS_ISC_TEST_TEMPLATE: LazyLock<Vec<ISCOptionDefinitio
             ISCOptionDefinition {
                 code: 188,
                 name: String::from("encapsulated"),
-                r#type: ISCOptionDefinitionType::Encapsulate(String::new()),
+                r#type: ISCOptionDefinitionType::DataString,
                 vendor_class: None,
             },
         ]

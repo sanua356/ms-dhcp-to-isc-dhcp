@@ -26,7 +26,7 @@ impl ISCDHCP {
             classes.push(ISCClass {
                 name: class_name.clone(),
                 condition: class_condition,
-                vendor_option_space: Some(format!("{}-SPACE", class_name)),
+                vendor_option_space: Some(class_name),
             });
         }
 

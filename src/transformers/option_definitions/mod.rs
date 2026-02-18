@@ -13,15 +13,16 @@ fn get_isc_option_compat(option_type: &MicrosoftOptionDefinitionType) -> ISCOpti
     match option_type {
         MicrosoftOptionDefinitionType::IPv4Address => ISCOptionDefinitionType::IPv4Address,
         MicrosoftOptionDefinitionType::IPv6Address => ISCOptionDefinitionType::IPv6Address,
-        MicrosoftOptionDefinitionType::EncapsulatedData => {
-            ISCOptionDefinitionType::Encapsulate(String::new())
-        }
         MicrosoftOptionDefinitionType::BinaryData => ISCOptionDefinitionType::Text,
         MicrosoftOptionDefinitionType::String => ISCOptionDefinitionType::DataString,
         MicrosoftOptionDefinitionType::Byte => ISCOptionDefinitionType::UInt8,
         MicrosoftOptionDefinitionType::Word => ISCOptionDefinitionType::UInt16,
         MicrosoftOptionDefinitionType::DWord => ISCOptionDefinitionType::UInt32,
         MicrosoftOptionDefinitionType::DWordDWord => ISCOptionDefinitionType::Text,
+
+        // In Microsoft, the "EncapsulatedData" type describes
+        // a string of bytes that will be passed as part of option 43
+        MicrosoftOptionDefinitionType::EncapsulatedData => ISCOptionDefinitionType::DataString,
     }
 }
 
@@ -33,6 +34,7 @@ impl ISCDHCP {
         let mut option_defs: Vec<ISCOptionDefinition> = Vec::new();
 
         for ms_option_def in microsoft_option_definitions {
+            // Skipping options that cannot be directly controlled in ISC
             if NO_CONFIGURABLE_V4_ISC_OPTION_DEFINITIONS
                 .iter()
                 .any(|item| item.code == ms_option_def.option_id)
@@ -40,6 +42,7 @@ impl ISCDHCP {
                 continue;
             }
 
+            // Skipping options that are already declared by default in the ISC
             if STANDARD_V4_ISC_OPTION_DEFINITIONS.iter().any(|item| {
                 item.code == ms_option_def.option_id
                     && ms_option_def
@@ -56,7 +59,7 @@ impl ISCDHCP {
             let option_vendor_class: Option<String> = ms_option_def
                 .vendor_class
                 .as_ref()
-                .map(|vendor_class| format!("{}-SPACE", format_string_isc(vendor_class)));
+                .map(|vendor_class| format_string_isc(vendor_class));
 
             if ms_option_def.multi_valued.unwrap_or_default() {
                 option_type = ISCOptionDefinitionType::Arrays(Box::new(option_type));
