@@ -10,6 +10,7 @@ mod policies;
 mod scopes;
 
 pub use classes::*;
+pub use filters::*;
 pub use option_definitions::*;
 
 #[derive(Debug, Deserialize)]

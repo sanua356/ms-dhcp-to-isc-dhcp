@@ -21,6 +21,7 @@ fn main() {
     isc_config
         .transform_option_definitions(&microsoft_config.ipv4.option_definitions.unwrap().items);
     isc_config.transform_classes(&microsoft_config.ipv4.classes.unwrap().items);
+    isc_config.transform_filters(&microsoft_config.ipv4.filters.unwrap());
 
     let mut x = String::new();
     isc_config.write_internal_configuration_parameters(&mut x);
@@ -30,6 +31,8 @@ fn main() {
     isc_config.write_transformed_option_definitions(&mut x);
     x.push_str(DEFAULT_PADDING);
     isc_config.write_transformed_classes(&mut x);
+    x.push_str(DEFAULT_PADDING);
+    isc_config.write_transformed_filters(&mut x);
 
     fs::write("output.conf", x).unwrap();
 
