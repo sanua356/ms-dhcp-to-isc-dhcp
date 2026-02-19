@@ -1,6 +1,8 @@
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
 
-#[derive(Debug, PartialEq)]
+use crate::helpers::render_template;
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum ISCOptionDefinitionType {
     Boolean,
     Int8,
@@ -67,21 +69,21 @@ pub struct ISCOptionDefinition {
     pub vendor_class: Option<String>,
 }
 
-const SERIALIZER_TEMPLATE: &str = r#"option {name} code {code} = {type};"#;
+const SERIALIZER_TEMPLATE: &str = r#"option {{name}} code {{code}} = {{type}};"#;
 
 impl Display for ISCOptionDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut name = self.name.clone();
+        let mut arguments: HashMap<&str, Option<String>> = HashMap::new();
+        arguments.insert("code", Some(self.code.clone().to_string()));
+        arguments.insert("type", Some(self.r#type.clone().to_string()));
 
+        let mut name = self.name.clone();
         if let Some(vendor_class) = &self.vendor_class {
             name = format!("{}.{}", vendor_class, name);
         }
 
-        let formatted = SERIALIZER_TEMPLATE
-            .replace("{name}", &name)
-            .replace("{code}", &self.code.to_string())
-            .replace("{type}", self.r#type.to_string().as_str());
+        arguments.insert("name", Some(name));
 
-        f.write_str(formatted.as_str())
+        f.write_str(render_template(SERIALIZER_TEMPLATE, arguments).as_str())
     }
 }

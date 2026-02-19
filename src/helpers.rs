@@ -1,5 +1,9 @@
 #![allow(dead_code)]
 
+use std::collections::HashMap;
+
+use minijinja::Environment;
+
 pub fn hex_to_ascii(hex_str: &str) -> String {
     let bytes = hex_str.trim_start_matches("0x").as_bytes();
 
@@ -25,6 +29,12 @@ pub fn format_string_isc(source: &str) -> String {
     }
 
     output
+}
+
+pub fn render_template(template: &'static str, arguments: HashMap<&str, Option<String>>) -> String {
+    let env = Environment::new();
+
+    env.render_str(template, arguments).unwrap()
 }
 
 #[cfg(test)]

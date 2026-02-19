@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{
     configs::{
         ISCDHCP,
@@ -5,12 +7,15 @@ use crate::{
         microsoft::{MicrosoftFilterListType, MicrosoftFilters},
     },
     constants::FILTER_ALLOW_CLASS_NAME,
+    helpers::render_template,
 };
 
-static DENY_FILTER_GROUP_TEMPLATE: &str = r#"group {
+static DENY_FILTER_GROUP_TEMPLATE: &str = r#"
+group {
 	deny booting;
-
-{deny-filter-hosts}
+{%- if deny_filter_hosts %}
+{{deny_filter_hosts}}
+{%- endif %}
 }
 "#;
 
@@ -57,16 +62,16 @@ impl ISCDHCP {
     }
 
     pub fn write_transformed_filters(&self, config: &mut String) {
-        let deny_hosts = DENY_FILTER_GROUP_TEMPLATE.replace(
-            "{deny-filter-hosts}",
-            self.deny_filter_hosts
-                .iter()
-                .map(|item| item.to_string())
-                .collect::<Vec<String>>()
-                .join("\n")
-                .as_str(),
-        );
-        config.push_str(deny_hosts.as_str());
+        let deny_hosts = self
+            .deny_filter_hosts
+            .iter()
+            .map(|item| item.to_string())
+            .collect::<Vec<String>>()
+            .join("\n");
+
+        let mut arguments: HashMap<&str, Option<String>> = HashMap::new();
+        arguments.insert("deny_filter_hosts", Some(deny_hosts));
+        config.push_str(render_template(DENY_FILTER_GROUP_TEMPLATE, arguments).as_str());
 
         let allow_hosts = self
             .allow_filter_subclasses
@@ -74,5 +79,61 @@ impl ISCDHCP {
             .map(|item| item.to_string())
             .collect::<Vec<String>>();
         config.push_str(allow_hosts.join("\n").as_str());
+    }
+}
+
+#[cfg(test)]
+mod _tests;
+
+#[cfg(test)]
+mod test {
+    use quick_xml::de::from_str;
+
+    use super::_tests::{
+        FILTERS_ALLOW_SUBCLASSES_ISC_TEST_TEMPLATE, FILTERS_DENY_HOSTS_ISC_TEST_TEMPLATE,
+        FILTERS_TRANSFORMED_TEST_TEMPLATE, FILTERS_XML_TEST_TEMPLATE,
+    };
+
+    use crate::configs::{ISCDHCP, microsoft::MicrosoftFilters};
+
+    #[test]
+    fn transform_filters_test() {
+        let data: MicrosoftFilters = from_str(FILTERS_XML_TEST_TEMPLATE).unwrap();
+
+        let mut isc_config: ISCDHCP = ISCDHCP::default();
+        isc_config.transform_filters(&data);
+
+        for (idx, item) in isc_config.allow_filter_subclasses.iter().enumerate() {
+            if item != &FILTERS_ALLOW_SUBCLASSES_ISC_TEST_TEMPLATE[idx] {
+                panic!(
+                    "{:?}, {:?}",
+                    item, FILTERS_ALLOW_SUBCLASSES_ISC_TEST_TEMPLATE[idx]
+                );
+            }
+        }
+
+        for (idx, item) in isc_config.deny_filter_hosts.iter().enumerate() {
+            if item != &FILTERS_DENY_HOSTS_ISC_TEST_TEMPLATE[idx] {
+                panic!(
+                    "{:?}, {:?}",
+                    item, FILTERS_DENY_HOSTS_ISC_TEST_TEMPLATE[idx]
+                );
+            }
+        }
+
+        assert!(true);
+    }
+
+    #[test]
+    fn write_transformed_filters_test() {
+        let data: MicrosoftFilters = from_str(FILTERS_XML_TEST_TEMPLATE).unwrap();
+
+        let mut x = String::new();
+
+        let mut isc_config: ISCDHCP = ISCDHCP::default();
+        isc_config.transform_filters(&data);
+        isc_config.write_transformed_filters(&mut x);
+
+        assert_eq!(x.trim(), FILTERS_TRANSFORMED_TEST_TEMPLATE.trim());
     }
 }

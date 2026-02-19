@@ -1,4 +1,6 @@
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
+
+use crate::helpers::render_template;
 
 #[derive(Debug)]
 #[cfg_attr(test, derive(PartialEq))]
@@ -10,33 +12,26 @@ pub struct ISCSubclass {
     pub vendor_option_space: Option<String>,
 }
 
-const SERIALIZER_TEMPLATE: &str = r#"subclass "{parent_name}" "{name}" {
-	{condition}
-	{vendor_option_space}
+const SERIALIZER_TEMPLATE: &str = r#"
+subclass "{{parent_name}}" "{{name}}" {
+	{%- if condition %}
+	match {{condition}};
+	{%- endif %}
+	{%- if vendor_option_space %}
+	vendor-option-space {{vendor_option_space}};
+	{%- endif %}
 }
 "#;
 
 impl Display for ISCSubclass {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut formatted = SERIALIZER_TEMPLATE
-            .replace("{parent_name}", &self.parent_name)
-            .replace("{name}", &self.name);
+        let mut arguments: HashMap<&str, Option<String>> = HashMap::new();
 
-        if let Some(condition) = &self.condition {
-            formatted = formatted.replace("{condition}", format!("match {condition};").as_str());
-        } else {
-            formatted = formatted.replace("{condition}", "");
-        }
+        arguments.insert("parent_name", Some(self.parent_name.clone()));
+        arguments.insert("name", Some(self.name.clone()));
+        arguments.insert("condition", self.condition.clone());
+        arguments.insert("vendor_option_space", self.vendor_option_space.clone());
 
-        if let Some(vendor_option_space) = &self.vendor_option_space {
-            formatted = formatted.replace(
-                "{vendor_option_space}",
-                format!("vendor-option-space {vendor_option_space};").as_str(),
-            );
-        } else {
-            formatted = formatted.replace("{vendor_option_space}", "");
-        }
-
-        f.write_str(formatted.as_str())
+        f.write_str(render_template(SERIALIZER_TEMPLATE, arguments).as_str())
     }
 }

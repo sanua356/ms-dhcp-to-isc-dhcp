@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 lazy_static = "1.5.0"
+minijinja = "2.15.1"
 quick-xml = { version = "0.39.0", features = ["serialize"] }
 regex = "1.12.3"
 serde = { version = "1.0.228", features = ["derive"] }
