@@ -33,6 +33,12 @@ impl ISCDHCP {
         self.classes.extend(classes);
     }
 
+    pub fn write_transformed_classes(&self, config: &mut String) {
+        for class in self.classes.iter() {
+            config.push_str(class.to_string().as_str());
+        }
+    }
+
     pub fn write_transformed_classes_to_spaces(&self, config: &mut String) {
         config.push_str(
             self.classes
@@ -42,12 +48,6 @@ impl ISCDHCP {
                 .join("\n")
                 .as_str(),
         );
-    }
-
-    pub fn write_transformed_classes(&self, config: &mut String) {
-        for class in self.classes.iter() {
-            config.push_str(class.to_string().as_str());
-        }
     }
 }
 

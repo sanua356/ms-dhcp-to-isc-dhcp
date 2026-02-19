@@ -1,7 +1,8 @@
 #![allow(dead_code)]
 
 use crate::constants::{
-    NO_CONFIGURABLE_V4_ISC_OPTION_DEFINITIONS, STANDARD_V4_ISC_OPTION_DEFINITIONS,
+    GLOBAL_ENCAPSULATED_CLASS_NAME, NO_CONFIGURABLE_V4_ISC_OPTION_DEFINITIONS,
+    STANDARD_V4_ISC_OPTION_DEFINITIONS,
 };
 use crate::{
     configs::{
@@ -58,7 +59,7 @@ impl ISCDHCP {
 
             let option_name = format_string_isc(&ms_option_def.name);
             let mut option_type = get_isc_option_compat(&ms_option_def.r#type);
-            let option_vendor_class: Option<String> = ms_option_def
+            let mut option_vendor_class: Option<String> = ms_option_def
                 .vendor_class
                 .as_ref()
                 .map(|vendor_class| format_string_isc(vendor_class));
@@ -67,6 +68,14 @@ impl ISCDHCP {
             // it needs to replace the original type.
             if ms_option_def.multi_valued.unwrap_or_default() {
                 option_type = ISCOptionDefinitionType::Arrays(Box::new(option_type));
+            }
+
+            // For Microsoft-encapsulated options without a vendor,
+            // you need to add a class layer when passing options.
+            if ms_option_def.r#type == MicrosoftOptionDefinitionType::EncapsulatedData
+                && ms_option_def.vendor_class.is_none()
+            {
+                option_vendor_class = Some(GLOBAL_ENCAPSULATED_CLASS_NAME.to_string());
             }
 
             let option_def = ISCOptionDefinition {

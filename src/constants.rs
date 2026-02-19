@@ -14,6 +14,24 @@ lazy_static! {
 
 pub static DEFAULT_PADDING: &str = "\n\n";
 
+/////////////////// MIGRATION SPECIFIC CONFIGURATION PARAMETERS ///////////////////////////
+pub static GLOBAL_ENCAPSULATED_SPACE: &str = "option space __INTERNAL__global-encapsulated-compat;";
+pub static GLOBAL_ENCAPSULATED_CLASS_NAME: &str = "__INTERNAL__global-encapsulated-compat";
+pub static GLOBAL_ENCAPSULATED_CLASS: &str = r#"
+class "__INTERNAL__global-encapsulated-compat" {
+	match if true;
+	vendor-option-space __INTERNAL__global-encapsulated-compat;
+}
+"#;
+
+pub static FILTER_ALLOW_CLASS_NAME: &str = "__INTERNAL__allow-filter";
+pub static FILTER_ALLOW_CLASS: &str = r#"
+class "__INTERNAL__allow-filter" {
+	match hardware;
+}
+"#;
+/////////////////// MIGRATION SPECIFIC CONFIGURATION PARAMETERS ///////////////////////////
+
 // Information about the declared options is taken from the ISC DHCP documentation, KEA Docs and many RFCs
 pub static STANDARD_V4_ISC_OPTION_DEFINITIONS: LazyLock<Vec<ISCOptionDefinition>> =
     LazyLock::new(|| {
