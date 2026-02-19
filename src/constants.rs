@@ -19,7 +19,7 @@ pub static GLOBAL_ENCAPSULATED_SPACE: &str = "option space __INTERNAL__global-en
 pub static GLOBAL_ENCAPSULATED_CLASS_NAME: &str = "__INTERNAL__global-encapsulated-compat";
 pub static GLOBAL_ENCAPSULATED_CLASS: &str = r#"
 class "__INTERNAL__global-encapsulated-compat" {
-	match if true;
+	match if not exists vendor-class-identifier;
 	vendor-option-space __INTERNAL__global-encapsulated-compat;
 }
 "#;
