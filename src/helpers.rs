@@ -39,7 +39,11 @@ pub fn render_template(template: &'static str, arguments: HashMap<&str, Option<S
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use rstest::rstest;
+
+    use crate::helpers::render_template;
 
     use super::{format_string_isc, hex_to_ascii};
 
@@ -76,5 +80,24 @@ mod tests {
     )]
     fn format_string_isc_test(#[case] source: String, #[case] output: String) {
         assert_eq!(format_string_isc(&source), output);
+    }
+
+    #[rstest]
+    #[case("Test template {{name}}", String::from("Test template qqqwww"))]
+    fn render_template_test(#[case] source: &'static str, #[case] output: String) {
+        let mut arguments: HashMap<&str, Option<String>> = HashMap::new();
+        arguments.insert("name", Some("qqqwww".to_string()));
+
+        assert_eq!(render_template(source, arguments), output);
+    }
+
+    #[rstest]
+    #[case("{{-%#!%!@%!@%!@^$%#%-gasegseag-gsedgsdg}}", String::from(""))]
+    #[should_panic]
+    fn render_template_test_panic(#[case] source: &'static str, #[case] output: String) {
+        let mut arguments: HashMap<&str, Option<String>> = HashMap::new();
+        arguments.insert("name", Some("qqqwww".to_string()));
+
+        assert_eq!(render_template(source, arguments), output);
     }
 }
