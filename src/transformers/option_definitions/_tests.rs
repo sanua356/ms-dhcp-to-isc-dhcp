@@ -88,7 +88,7 @@ pub static OPTION_DEFINITIONS_ISC_TEST_TEMPLATE: LazyLock<Vec<ISCOptionDefinitio
                 code: 181,
                 name: String::from("byteoption"),
                 r#type: ISCOptionDefinitionType::UInt8,
-                vendor_class: Some(String::from("test_vendor_class")),
+                vendor_class: Some(String::from("test-vendor-class")),
             },
             ISCOptionDefinition {
                 code: 182,
@@ -137,7 +137,7 @@ pub static OPTION_DEFINITIONS_ISC_TEST_TEMPLATE: LazyLock<Vec<ISCOptionDefinitio
 
 #[cfg(test)]
 pub static OPTION_DEFINITIONS_TRANSFORMED_TEST_TEMPLATE: &str = r#"
-option test_vendor_class.byteoption code 181 = unsigned integer 8;
+option test-vendor-class.byteoption code 181 = unsigned integer 8;
 option wordoption code 182 = array of unsigned integer 16;
 option longoption code 183 = unsigned integer 32;
 option longintoption code 184 = text;

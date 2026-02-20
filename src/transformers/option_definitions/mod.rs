@@ -139,7 +139,7 @@ mod test {
     }
 
     #[test]
-    fn write_transformed_option_definitions() {
+    fn write_transformed_option_definitions_test() {
         let data: Vec<MicrosoftOptionDefinition> =
             from_str(OPTION_DEFINITIONS_XML_TEST_TEMPLATE).unwrap();
 

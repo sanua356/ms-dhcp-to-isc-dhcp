@@ -130,3 +130,56 @@ impl ISCDHCP {
         config.push_str(options.join("\n").as_str());
     }
 }
+
+#[cfg(test)]
+mod _tests;
+
+#[cfg(test)]
+mod test {
+    use quick_xml::de::from_str;
+
+    use super::_tests::{
+        OPTION_DEFINITIONS_XML_TEST_TEMPLATE, OPTIONS_ISC_TEST_TEMPLATE, OPTIONS_XML_TEST_TEMPLATE,
+    };
+
+    use crate::{
+        configs::{
+            ISCDHCP,
+            microsoft::{MicrosoftOptionDefinition, MicrosoftOptionValue},
+        },
+        transformers::options::_tests::OPTIONS_TRANSFORMED_TEST_TEMPLATE,
+    };
+
+    #[test]
+    fn transform_options_test() {
+        let ms_option_defs: Vec<MicrosoftOptionDefinition> =
+            from_str(OPTION_DEFINITIONS_XML_TEST_TEMPLATE).unwrap();
+        let ms_options: Vec<MicrosoftOptionValue> = from_str(OPTIONS_XML_TEST_TEMPLATE).unwrap();
+
+        let mut isc_config: ISCDHCP = ISCDHCP::default();
+        isc_config.transform_options(&ms_options, &ms_option_defs);
+
+        for (idx, item) in isc_config.options.iter().enumerate() {
+            if item != &OPTIONS_ISC_TEST_TEMPLATE[idx] {
+                panic!("{:?}, {:?}", item, OPTIONS_ISC_TEST_TEMPLATE[idx]);
+            }
+        }
+
+        assert!(true);
+    }
+
+    #[test]
+    fn write_transformed_options_test() {
+        let ms_option_defs: Vec<MicrosoftOptionDefinition> =
+            from_str(OPTION_DEFINITIONS_XML_TEST_TEMPLATE).unwrap();
+        let ms_options: Vec<MicrosoftOptionValue> = from_str(OPTIONS_XML_TEST_TEMPLATE).unwrap();
+
+        let mut x = String::new();
+
+        let mut isc_config: ISCDHCP = ISCDHCP::default();
+        isc_config.transform_options(&ms_options, &ms_option_defs);
+        isc_config.write_transformed_options(&mut x);
+
+        assert_eq!(x.trim(), OPTIONS_TRANSFORMED_TEST_TEMPLATE.trim());
+    }
+}

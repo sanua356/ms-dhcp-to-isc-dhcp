@@ -20,7 +20,7 @@ pub fn hex_to_ascii(hex_str: &str) -> String {
 }
 
 pub fn format_string_isc(source: &str) -> String {
-    let mut output = source.to_lowercase().replace(" ", "-");
+    let mut output = source.to_lowercase().replace(" ", "-").replace("_", "-");
 
     if output.starts_with("-") {
         output = output[1..output.len()].to_string();
