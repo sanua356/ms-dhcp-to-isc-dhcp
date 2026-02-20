@@ -42,11 +42,13 @@ pub static FILTERS_DENY_HOSTS_ISC_TEST_TEMPLATE: LazyLock<Vec<ISCHost>> = LazyLo
             name: String::from("deny-host-0"),
             mac_address: Some(String::from("CC:DD:EE:FF:11:11")),
             fixed_address: None,
+            options: None,
         },
         ISCHost {
             name: String::from("deny-host-1"),
             mac_address: Some(String::from("11:11:11:11:11:11")),
             fixed_address: None,
+            options: None,
         },
     ]
 });
@@ -83,9 +85,9 @@ host deny-host-1 {
 	hardware ethernet 11:11:11:11:11:11;
 }
 }
-subclass "__INTERNAL__allow-filter" "AA:BB:CC:DD:EE:FF" {
+subclass "INTERNAL--allow-filter" "AA:BB:CC:DD:EE:FF" {
 }
 
-subclass "__INTERNAL__allow-filter" "33:33:33:33:33:33" {
+subclass "INTERNAL--allow-filter" "33:33:33:33:33:33" {
 }
 "#;

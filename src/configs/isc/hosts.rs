@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fmt::Display, net::Ipv4Addr};
 
-use crate::helpers::render_template;
+use crate::{configs::isc::ISCOption, helpers::render_template};
 
 #[derive(Debug)]
 #[cfg_attr(test, derive(PartialEq))]
@@ -8,8 +8,8 @@ pub struct ISCHost {
     pub name: String,
     pub mac_address: Option<String>,
     pub fixed_address: Option<Vec<Ipv4Addr>>,
-    // TODO: It doesn't exist yet options
-    // pub options: Option<Vec<>>
+
+    pub options: Option<Vec<ISCOption>>,
 }
 
 const SERIALIZER_TEMPLATE: &str = r#"
@@ -19,6 +19,9 @@ host {{name}} {
 	{%- endif %}
 	{%- if fixed_address %}
 	fixed-address {{fixed_address}};
+	{%- endif %}
+	{%- if options %}
+	{{options}}
 	{%- endif %}
 }
 "#;
@@ -37,6 +40,15 @@ impl Display for ISCHost {
         });
 
         arguments.insert("fixed_address", fixed_address);
+
+        let options: Option<String> = self.options.as_ref().map(|vec| {
+            vec.iter()
+                .map(|item| item.to_string())
+                .collect::<Vec<String>>()
+                .join("\n")
+        });
+
+        arguments.insert("options", options);
 
         f.write_str(render_template(SERIALIZER_TEMPLATE, arguments).as_str())
     }

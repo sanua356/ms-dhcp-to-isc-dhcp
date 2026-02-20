@@ -12,6 +12,7 @@ mod scopes;
 pub use classes::*;
 pub use filters::*;
 pub use option_definitions::*;
+pub use option_values::*;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]

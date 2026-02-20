@@ -34,6 +34,7 @@ impl ISCDHCP {
                     name: format!("deny-host-{counter}"),
                     mac_address: Some(host.mac_address.replace("-", ":")),
                     fixed_address: None,
+                    options: None,
                 });
                 counter += 1;
             }

@@ -3,11 +3,13 @@
 pub mod classes;
 pub mod hosts;
 pub mod option_definitions;
+pub mod options;
 pub mod subclasses;
 
 pub use classes::*;
 pub use hosts::*;
 pub use option_definitions::*;
+pub use options::*;
 pub use subclasses::*;
 
 use crate::constants::{FILTER_ALLOW_CLASS, GLOBAL_ENCAPSULATED_CLASS, GLOBAL_ENCAPSULATED_SPACE};
@@ -16,6 +18,7 @@ use crate::constants::{FILTER_ALLOW_CLASS, GLOBAL_ENCAPSULATED_CLASS, GLOBAL_ENC
 #[allow(clippy::upper_case_acronyms)]
 pub struct ISCDHCP {
     pub option_definitions: Vec<option_definitions::ISCOptionDefinition>,
+    pub options: Vec<options::ISCOption>,
     pub classes: Vec<classes::ISCClass>,
     pub deny_filter_hosts: Vec<hosts::ISCHost>,
     pub allow_filter_subclasses: Vec<subclasses::ISCSubclass>,
@@ -25,6 +28,7 @@ impl ISCDHCP {
     pub fn default() -> Self {
         ISCDHCP {
             option_definitions: vec![],
+            options: vec![],
             classes: vec![],
             deny_filter_hosts: vec![],
             allow_filter_subclasses: vec![],

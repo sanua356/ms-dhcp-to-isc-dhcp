@@ -130,7 +130,7 @@ pub static OPTION_DEFINITIONS_ISC_TEST_TEMPLATE: LazyLock<Vec<ISCOptionDefinitio
                 code: 188,
                 name: String::from("encapsulated"),
                 r#type: ISCOptionDefinitionType::DataString,
-                vendor_class: Some(String::from("__INTERNAL__global-encapsulated-compat")),
+                vendor_class: Some(String::from("INTERNAL--global-encapsulated-compat")),
             },
         ]
     });
@@ -144,5 +144,5 @@ option longintoption code 184 = text;
 option ipv4option code 185 = ip-address;
 option stringoption code 186 = string;
 option binaryoption code 187 = text;
-option __INTERNAL__global-encapsulated-compat.encapsulated code 188 = string;
+option INTERNAL--global-encapsulated-compat.encapsulated code 188 = string;
 "#;

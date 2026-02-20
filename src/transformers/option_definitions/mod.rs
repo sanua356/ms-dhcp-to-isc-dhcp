@@ -12,7 +12,9 @@ use crate::{
     helpers::format_string_isc,
 };
 
-fn get_isc_option_compat(option_type: &MicrosoftOptionDefinitionType) -> ISCOptionDefinitionType {
+pub fn get_isc_option_compat(
+    option_type: &MicrosoftOptionDefinitionType,
+) -> ISCOptionDefinitionType {
     match option_type {
         MicrosoftOptionDefinitionType::IPv4Address => ISCOptionDefinitionType::IPv4Address,
         MicrosoftOptionDefinitionType::IPv6Address => ISCOptionDefinitionType::IPv6Address,

@@ -7,6 +7,8 @@ use std::sync::LazyLock;
 use super::configs::isc::option_definitions::{ISCOptionDefinition, ISCOptionDefinitionType};
 
 lazy_static! {
+    pub static ref SINGLE_BYTE_WITH_PREFIX_REGEXP: Regex =
+        Regex::new(r"^0x[A-Fa-f0-9]{2}$").unwrap();
     pub static ref BYTES_WITH_PREFIX_REGEXP: Regex = Regex::new(r"^0x[A-Fa-f0-9]+$").unwrap();
     pub static ref MAC_ADDRESS_REGEXP: Regex =
         Regex::new(r"^[0-9A-Fa-f]{2}([-][0-9A-Fa-f]{2}){5}$").unwrap();
@@ -15,18 +17,18 @@ lazy_static! {
 pub static DEFAULT_PADDING: &str = "\n\n";
 
 /////////////////// MIGRATION SPECIFIC CONFIGURATION PARAMETERS ///////////////////////////
-pub static GLOBAL_ENCAPSULATED_SPACE: &str = "option space __INTERNAL__global-encapsulated-compat;";
-pub static GLOBAL_ENCAPSULATED_CLASS_NAME: &str = "__INTERNAL__global-encapsulated-compat";
+pub static GLOBAL_ENCAPSULATED_SPACE: &str = "option space INTERNAL--global-encapsulated-compat;";
+pub static GLOBAL_ENCAPSULATED_CLASS_NAME: &str = "INTERNAL--global-encapsulated-compat";
 pub static GLOBAL_ENCAPSULATED_CLASS: &str = r#"
-class "__INTERNAL__global-encapsulated-compat" {
+class "INTERNAL--global-encapsulated-compat" {
 	match if not exists vendor-class-identifier;
-	vendor-option-space __INTERNAL__global-encapsulated-compat;
+	vendor-option-space INTERNAL--global-encapsulated-compat;
 }
 "#;
 
-pub static FILTER_ALLOW_CLASS_NAME: &str = "__INTERNAL__allow-filter";
+pub static FILTER_ALLOW_CLASS_NAME: &str = "INTERNAL--allow-filter";
 pub static FILTER_ALLOW_CLASS: &str = r#"
-class "__INTERNAL__allow-filter" {
+class "INTERNAL--allow-filter" {
 	match hardware;
 }
 "#;

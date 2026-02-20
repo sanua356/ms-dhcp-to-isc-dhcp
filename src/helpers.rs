@@ -4,6 +4,8 @@ use std::collections::HashMap;
 
 use minijinja::Environment;
 
+use crate::constants::SINGLE_BYTE_WITH_PREFIX_REGEXP;
+
 pub fn hex_to_ascii(hex_str: &str) -> String {
     let bytes = hex_str.trim_start_matches("0x").as_bytes();
 
@@ -35,6 +37,21 @@ pub fn render_template(template: &'static str, arguments: HashMap<&str, Option<S
     let env = Environment::new();
 
     env.render_str(template, arguments).unwrap()
+}
+
+pub fn vec_bytes_string_to_string(bytes_str: Vec<String>) -> String {
+    let output: String = bytes_str
+        .iter()
+        .map(|byte| {
+            if !SINGLE_BYTE_WITH_PREFIX_REGEXP.is_match(byte) {
+                panic!("Value '{byte}' is not byte with prefix.");
+            }
+            byte.trim_start_matches("0x")
+        })
+        .collect::<Vec<&str>>()
+        .join("");
+
+    hex_to_ascii(output.as_str())
 }
 
 #[cfg(test)]
