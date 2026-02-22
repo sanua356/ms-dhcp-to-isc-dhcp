@@ -9,9 +9,9 @@ use crate::validators::validate_string_optional;
 pub struct MicrosoftOptionValue {
     pub option_id: u8,
     pub value: Option<Vec<String>>,
-    #[serde(deserialize_with = "validate_string_optional")]
+    #[serde(default, deserialize_with = "validate_string_optional")]
     pub vendor_class: Option<String>,
-    #[serde(deserialize_with = "validate_string_optional")]
+    #[serde(default, deserialize_with = "validate_string_optional")]
     pub user_class: Option<String>,
 }
 

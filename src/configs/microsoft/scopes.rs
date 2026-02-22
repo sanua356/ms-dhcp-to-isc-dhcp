@@ -41,7 +41,7 @@ pub struct MicrosoftResevation {
     pub ip_address: Ipv4Addr,
     pub client_id: String,
     pub r#type: MicrosoftScopeType,
-    #[serde(deserialize_with = "validate_string_optional")]
+    #[serde(default, deserialize_with = "validate_string_optional")]
     pub description: Option<String>,
 }
 
@@ -66,12 +66,12 @@ pub struct MicrosoftScopeV4 {
     pub max_bootp_clients: u32,
     pub nap_enable: bool,
     pub delay: u32,
-    #[serde(deserialize_with = "validate_string_optional")]
+    #[serde(default, deserialize_with = "validate_string_optional")]
     pub nap_profile: Option<String>,
-    #[serde(deserialize_with = "validate_string_optional")]
+    #[serde(default, deserialize_with = "validate_string_optional")]
     pub description: Option<String>,
     pub activate_policies: bool,
-    #[serde(deserialize_with = "validate_string_optional")]
+    #[serde(default, deserialize_with = "validate_string_optional")]
     pub super_scope_name: Option<String>,
 
     #[serde(rename = "ExclusionRanges")]

@@ -67,62 +67,72 @@ fn get_transformed_option_value(
     }
 }
 
+pub fn ms_options_to_isc_options(
+    microsoft_options: &[MicrosoftOptionValue],
+    microsoft_option_definitions: &[MicrosoftOptionDefinition],
+) -> Vec<ISCOption> {
+    let mut options: Vec<ISCOption> = Vec::new();
+
+    for ms_option in microsoft_options {
+        // Skipping options that cannot be directly controlled in ISC
+        if NO_CONFIGURABLE_V4_ISC_OPTION_DEFINITIONS
+            .iter()
+            .any(|item| item.code == ms_option.option_id)
+        {
+            continue;
+        }
+
+        let ms_option_def = microsoft_option_definitions.iter().find(|item| {
+            item.option_id == ms_option.option_id && item.vendor_class == ms_option.vendor_class
+        });
+
+        if let Some(def) = ms_option_def {
+            let name: String = if ms_option.vendor_class.is_none() {
+                STANDARD_V4_ISC_OPTION_DEFINITIONS
+                    .iter()
+                    .find(|item| item.code == ms_option.option_id)
+                    .map(|item| item.name.clone())
+                    .unwrap_or_else(|| format_string_isc(&def.name))
+            } else {
+                format_string_isc(&def.name)
+            };
+            let value = get_transformed_option_value(ms_option, def);
+            let space: Option<String> = match &ms_option.vendor_class {
+                Some(vendor_class) => Some(format_string_isc(vendor_class.as_str())),
+                None => {
+                    if def.r#type == MicrosoftOptionDefinitionType::EncapsulatedData {
+                        Some(GLOBAL_ENCAPSULATED_CLASS_NAME.to_string())
+                    } else {
+                        None
+                    }
+                }
+            };
+            let r#type = get_isc_option_compat(&def.r#type);
+
+            options.push(ISCOption {
+                name,
+                space,
+                value,
+                r#type,
+            });
+        } else {
+            continue;
+        }
+    }
+
+    options
+}
+
 impl ISCDHCP {
     pub fn transform_options(
         &mut self,
         microsoft_options: &[MicrosoftOptionValue],
         microsoft_option_definitions: &[MicrosoftOptionDefinition],
     ) {
-        let mut options: Vec<ISCOption> = Vec::new();
-
-        for ms_option in microsoft_options {
-            // Skipping options that cannot be directly controlled in ISC
-            if NO_CONFIGURABLE_V4_ISC_OPTION_DEFINITIONS
-                .iter()
-                .any(|item| item.code == ms_option.option_id)
-            {
-                continue;
-            }
-
-            let ms_option_def = microsoft_option_definitions.iter().find(|item| {
-                item.option_id == ms_option.option_id && item.vendor_class == ms_option.vendor_class
-            });
-
-            if let Some(def) = ms_option_def {
-                let name: String = if ms_option.vendor_class.is_none() {
-                    STANDARD_V4_ISC_OPTION_DEFINITIONS
-                        .iter()
-                        .find(|item| item.code == ms_option.option_id)
-                        .map(|item| item.name.clone())
-                        .unwrap_or_else(|| format_string_isc(&def.name))
-                } else {
-                    format_string_isc(&def.name)
-                };
-                let value = get_transformed_option_value(ms_option, def);
-                let space: Option<String> = match &ms_option.vendor_class {
-                    Some(vendor_class) => Some(format_string_isc(vendor_class.as_str())),
-                    None => {
-                        if def.r#type == MicrosoftOptionDefinitionType::EncapsulatedData {
-                            Some(GLOBAL_ENCAPSULATED_CLASS_NAME.to_string())
-                        } else {
-                            None
-                        }
-                    }
-                };
-                let r#type = get_isc_option_compat(&def.r#type);
-
-                options.push(ISCOption {
-                    name,
-                    space,
-                    value,
-                    r#type,
-                });
-            } else {
-                continue;
-            }
-        }
-
-        self.options.extend(options);
+        self.options.extend(ms_options_to_isc_options(
+            microsoft_options,
+            microsoft_option_definitions,
+        ));
     }
 
     pub fn write_transformed_options(&self, config: &mut String) {

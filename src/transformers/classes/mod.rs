@@ -27,6 +27,7 @@ impl ISCDHCP {
                 name: class_name.clone(),
                 condition: class_condition,
                 vendor_option_space: Some(class_name),
+                options: None,
             });
         }
 

@@ -17,7 +17,7 @@ pub struct MicrosoftClass {
     pub r#type: MicrosoftClassType,
     #[serde(deserialize_with = "validate_hex_string_optional")]
     pub data: Option<String>,
-    #[serde(deserialize_with = "validate_string_optional")]
+    #[serde(default, deserialize_with = "validate_string_optional")]
     pub description: Option<String>,
 }
 

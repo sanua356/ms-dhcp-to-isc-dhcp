@@ -43,8 +43,7 @@ where
                 Ok(None)
             }
         }
-
-        _ => Ok(opt),
+        None => Ok(None),
     }
 }
 
@@ -73,7 +72,7 @@ mod test {
 
     #[derive(Deserialize)]
     struct TestValidateStringOptional {
-        #[serde(deserialize_with = "validate_string_optional")]
+        #[serde(default, deserialize_with = "validate_string_optional")]
         #[serde(rename = "Field")]
         field: Option<String>,
     }

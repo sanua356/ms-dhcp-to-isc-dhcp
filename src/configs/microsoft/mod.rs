@@ -13,6 +13,7 @@ pub use classes::*;
 pub use filters::*;
 pub use option_definitions::*;
 pub use option_values::*;
+pub use policies::*;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
@@ -26,6 +27,7 @@ pub struct MicrosoftIPv4 {
     pub option_definitions: Option<option_definitions::MicrosoftOptionDefinitions>,
     pub option_values: Option<option_values::MicrosoftOptionValues>,
     pub filters: Option<filters::MicrosoftFilters>,
+    pub policies: Option<policies::MicrosoftPolicies>,
     pub scopes: Option<scopes::MicrosoftScopesV4>,
 }
 

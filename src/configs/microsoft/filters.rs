@@ -16,7 +16,7 @@ pub struct MicrosoftFilter {
     pub list: MicrosoftFilterListType,
     #[serde(deserialize_with = "validate_mac_address_string")]
     pub mac_address: String,
-    #[serde(deserialize_with = "validate_string_optional")]
+    #[serde(default, deserialize_with = "validate_string_optional")]
     pub description: Option<String>,
 }
 

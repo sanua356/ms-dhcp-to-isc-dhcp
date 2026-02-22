@@ -32,6 +32,12 @@ class "INTERNAL--allow-filter" {
 	match hardware;
 }
 "#;
+
+pub static RELAY_AGENT_SUBSCRIBER_ID_OPTION_DEFINITION: &str =
+    "option agent.subscriber-id code 6 = string;";
+
+pub static POLICY_PSEUDOCONDITION_FOR_DISABLE: &str = "\"enabled\" = \"true\"";
+pub static POLICY_CONDITION_OPERATORS: [&str; 2] = ["EQ", "NE"];
 /////////////////// MIGRATION SPECIFIC CONFIGURATION PARAMETERS ///////////////////////////
 
 // Information about the declared options is taken from the ISC DHCP documentation, KEA Docs and many RFCs

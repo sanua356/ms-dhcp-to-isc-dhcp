@@ -27,11 +27,13 @@ pub static CLASSES_ISC_TEST_TEMPLATE: LazyLock<Vec<ISCClass>> = LazyLock::new(||
             name: String::from("default-routing-and-remote-access-class"),
             condition: String::from("if option user-class = \"RRAS.Microsoft\""),
             vendor_option_space: Some(String::from("default-routing-and-remote-access-class")),
+            options: None,
         },
         ISCClass {
             name: String::from("microsoft-windows-2000-options"),
             condition: String::from("if option vendor-class-identifier = \"MSFT 5.0\""),
             vendor_option_space: Some(String::from("microsoft-windows-2000-options")),
+            options: None,
         },
     ]
 });

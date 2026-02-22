@@ -12,7 +12,10 @@ pub use option_definitions::*;
 pub use options::*;
 pub use subclasses::*;
 
-use crate::constants::{FILTER_ALLOW_CLASS, GLOBAL_ENCAPSULATED_CLASS, GLOBAL_ENCAPSULATED_SPACE};
+use crate::constants::{
+    FILTER_ALLOW_CLASS, GLOBAL_ENCAPSULATED_CLASS, GLOBAL_ENCAPSULATED_SPACE,
+    RELAY_AGENT_SUBSCRIBER_ID_OPTION_DEFINITION,
+};
 
 #[derive(Debug)]
 #[allow(clippy::upper_case_acronyms)]
@@ -20,6 +23,7 @@ pub struct ISCDHCP {
     pub option_definitions: Vec<option_definitions::ISCOptionDefinition>,
     pub options: Vec<options::ISCOption>,
     pub classes: Vec<classes::ISCClass>,
+    pub policices_classes: Vec<classes::ISCClass>,
     pub deny_filter_hosts: Vec<hosts::ISCHost>,
     pub allow_filter_subclasses: Vec<subclasses::ISCSubclass>,
 }
@@ -30,6 +34,7 @@ impl ISCDHCP {
             option_definitions: vec![],
             options: vec![],
             classes: vec![],
+            policices_classes: vec![],
             deny_filter_hosts: vec![],
             allow_filter_subclasses: vec![],
         }
@@ -39,5 +44,6 @@ impl ISCDHCP {
         config.push_str(GLOBAL_ENCAPSULATED_SPACE);
         config.push_str(GLOBAL_ENCAPSULATED_CLASS);
         config.push_str(FILTER_ALLOW_CLASS);
+        config.push_str(RELAY_AGENT_SUBSCRIBER_ID_OPTION_DEFINITION);
     }
 }

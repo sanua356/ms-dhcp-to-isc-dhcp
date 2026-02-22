@@ -31,9 +31,9 @@ pub struct MicrosoftOptionDefinition {
     pub option_id: u8,
     pub r#type: MicrosoftOptionDefinitionType,
     pub default_value: Option<Vec<String>>,
-    #[serde(deserialize_with = "validate_string_optional")]
+    #[serde(default, deserialize_with = "validate_string_optional")]
     pub description: Option<String>,
-    #[serde(deserialize_with = "validate_string_optional")]
+    #[serde(default, deserialize_with = "validate_string_optional")]
     pub vendor_class: Option<String>,
     pub multi_valued: Option<bool>,
 }
