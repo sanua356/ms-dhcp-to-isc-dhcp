@@ -4,7 +4,7 @@ A command-line utility for migrating the configuration of Microsoft Server DHCP 
 
 ## Introduction
 
-Currently, **only IPv4 configuration ** migration is supported, but IPv6 may also appear in the future.
+Currently, only IPv4 configuration migration is supported, but IPv6 may also appear in the future.
 
 ## CLI Parameters
 
