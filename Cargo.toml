@@ -1,9 +1,10 @@
 [package]
 name = "dhcp-ms-to-isc-dhcp"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2024"
 
 [dependencies]
+clap = { version = "4.5.60", features = ["derive"] }
 lazy_static = "1.5.0"
 minijinja = "2.15.1"
 quick-xml = { version = "0.39.0", features = ["serialize"] }

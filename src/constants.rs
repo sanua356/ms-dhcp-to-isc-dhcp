@@ -30,11 +30,10 @@ pub static FILTER_ALLOW_CLASS_NAME: &str = "INTERNAL--allow-filter";
 pub static FILTER_ALLOW_CLASS: &str = r#"
 class "INTERNAL--allow-filter" {
 	match hardware;
-}
-"#;
+}"#;
 
-pub static RELAY_AGENT_SUBSCRIBER_ID_OPTION_DEFINITION: &str =
-    "option agent.subscriber-id code 6 = string;";
+pub static RELAY_AGENT_SUBSCRIBER_ID_OPTION_DEFINITION: &str = r#"option agent.subscriber-id code 6 = string;
+"#;
 
 pub static POLICY_PSEUDOCONDITION_FOR_DISABLE: &str = "\"enabled\" = \"true\"";
 pub static POLICY_CONDITION_OPERATORS: [&str; 2] = ["EQ", "NE"];

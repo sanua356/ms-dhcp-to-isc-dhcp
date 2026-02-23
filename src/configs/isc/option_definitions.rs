@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::{collections::HashMap, fmt::Display};
 
 use crate::helpers::render_template;
