@@ -166,8 +166,9 @@ impl ISCDHCP {
                     ms_reservations
                         .items
                         .iter()
-                        .map(|item| ISCHost {
-                            name: item.name.clone().unwrap_or_default(),
+                        .enumerate()
+                        .map(|(idx, item)| ISCHost {
+                            name: item.name.clone().unwrap_or(format!("reservation-{idx}")),
                             fixed_address: Some(vec![item.ip_address]),
                             mac_address: None,
                             options: Some(vec![ISCOption {

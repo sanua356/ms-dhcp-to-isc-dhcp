@@ -2,7 +2,10 @@ use clap::Parser;
 use quick_xml::de::from_str;
 use std::{env, fs, path::PathBuf};
 
-use crate::configs::{ISCDHCP, MicrosoftDHCP};
+use crate::{
+    configs::{ISCDHCP, MicrosoftDHCP},
+    transliterator::transliterate,
+};
 
 #[derive(Debug, Parser)]
 #[command(
@@ -21,11 +24,22 @@ pub struct CLIArgs {
         help = "Optional. Specifies the path to the ISC DHCP configuration file."
     )]
     isc_filepath: Option<String>,
+
+    #[arg(
+        long,
+        help = "Optional. Performs the transliteration process (GOST 7.79-2000. System 'B'./ISO 9:1995) before starting migration for Microsoft Server DHCP configuration."
+    )]
+    with_transliterate: bool,
 }
 
 pub fn run_cli(arguments: CLIArgs) {
     let config_filepath = PathBuf::from(arguments.microsoft_filepath);
-    let config_data: String = fs::read_to_string(config_filepath).unwrap();
+    let mut config_data: String = fs::read_to_string(config_filepath).unwrap();
+
+    if arguments.with_transliterate {
+        config_data = transliterate(config_data);
+    }
+
     let microsoft_config: MicrosoftDHCP = from_str(&config_data).unwrap();
 
     let microsoft_config_version = format!(

@@ -27,5 +27,5 @@ pub struct MicrosoftFilters {
     pub deny: bool,
 
     #[serde(rename = "Filter")]
-    pub items: Vec<MicrosoftFilter>,
+    pub items: Option<Vec<MicrosoftFilter>>,
 }

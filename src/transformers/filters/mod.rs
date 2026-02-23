@@ -21,44 +21,46 @@ group {
 
 impl ISCDHCP {
     pub fn transform_filters(&mut self, filters: &MicrosoftFilters) {
-        if filters.deny {
-            let mut deny_hosts: Vec<ISCHost> = Vec::new();
+        if let Some(filter_hosts) = &filters.items {
+            if filters.deny {
+                let mut deny_hosts: Vec<ISCHost> = Vec::new();
 
-            let mut counter: i32 = 0;
-            for host in &filters.items {
-                if host.list != MicrosoftFilterListType::Deny {
-                    continue;
+                let mut counter: i32 = 0;
+                for host in filter_hosts {
+                    if host.list != MicrosoftFilterListType::Deny {
+                        continue;
+                    }
+
+                    deny_hosts.push(ISCHost {
+                        name: format!("deny-host-{counter}"),
+                        mac_address: Some(host.mac_address.replace("-", ":")),
+                        fixed_address: None,
+                        options: None,
+                    });
+                    counter += 1;
                 }
 
-                deny_hosts.push(ISCHost {
-                    name: format!("deny-host-{counter}"),
-                    mac_address: Some(host.mac_address.replace("-", ":")),
-                    fixed_address: None,
-                    options: None,
-                });
-                counter += 1;
+                self.deny_filter_hosts.extend(deny_hosts);
             }
 
-            self.deny_filter_hosts.extend(deny_hosts);
-        }
+            if filters.allow {
+                let mut allow_subclasses: Vec<ISCSubclass> = Vec::new();
 
-        if filters.allow {
-            let mut allow_subclasses: Vec<ISCSubclass> = Vec::new();
+                for host in filter_hosts {
+                    if host.list != MicrosoftFilterListType::Allow {
+                        continue;
+                    }
 
-            for host in &filters.items {
-                if host.list != MicrosoftFilterListType::Allow {
-                    continue;
+                    allow_subclasses.push(ISCSubclass {
+                        parent_name: FILTER_ALLOW_CLASS_NAME.to_string(),
+                        name: host.mac_address.replace("-", ":"),
+                        condition: None,
+                        vendor_option_space: None,
+                    });
                 }
 
-                allow_subclasses.push(ISCSubclass {
-                    parent_name: FILTER_ALLOW_CLASS_NAME.to_string(),
-                    name: host.mac_address.replace("-", ":"),
-                    condition: None,
-                    vendor_option_space: None,
-                });
+                self.allow_filter_subclasses.extend(allow_subclasses);
             }
-
-            self.allow_filter_subclasses.extend(allow_subclasses);
         }
     }
 

@@ -6,6 +6,7 @@ mod configs;
 mod constants;
 mod helpers;
 mod transformers;
+mod transliterator;
 mod validators;
 
 fn main() {

@@ -40,6 +40,7 @@ pub struct MicrosoftExclusionRanges {
 #[derive(Debug, Deserialize)]
 #[serde(rename = "Reservation", rename_all = "PascalCase")]
 pub struct MicrosoftResevation {
+    #[serde(default, deserialize_with = "validate_string_optional")]
     pub name: Option<String>,
     #[serde(rename = "IPAddress")]
     pub ip_address: Ipv4Addr,
