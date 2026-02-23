@@ -8,7 +8,7 @@ use super::{option_values::MicrosoftOptionValues, scopes::MicrosoftIPRange};
 
 use crate::validators::validate_string_optional;
 
-#[derive(Debug, Deserialize, PartialEq)]
+#[derive(Debug, Deserialize, Clone, PartialEq)]
 pub enum MicrosoftPolicyConditionType {
     AND,
     OR,
@@ -23,14 +23,14 @@ impl Display for MicrosoftPolicyConditionType {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(rename = "IPRanges")]
 pub struct MicrosoftIPRanges {
     #[serde(rename = "IPRange")]
     pub items: Vec<MicrosoftIPRange>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(rename = "Policy", rename_all = "PascalCase")]
 pub struct MicrosoftPolicy {
     pub name: String,

@@ -20,7 +20,35 @@ use crate::{
     transformers::option_definitions::get_isc_option_compat,
 };
 
-fn transform_values<T>(values: &[String], error_type: &str) -> Vec<String>
+fn transform_numeric_values<T>(values: &[String], error_type: &str, is_hex: bool) -> Vec<String>
+where
+    T: TryFrom<u128> + ToString,
+    <T as TryFrom<u128>>::Error: Debug,
+{
+    let mut output: Vec<String> = Vec::with_capacity(values.len());
+
+    for value in values.iter() {
+        let cleaned = value.trim_start_matches("0x");
+
+        let parsed = if is_hex {
+            u128::from_str_radix(cleaned, 16)
+                .unwrap_or_else(|_| panic!("Value '{value}' is not valid hex."))
+        } else {
+            cleaned
+                .parse::<u128>()
+                .unwrap_or_else(|_| panic!("Value '{value}' is not valid decimal."))
+        };
+
+        let transformed = T::try_from(parsed)
+            .unwrap_or_else(|_| panic!("Value '{value}' does not fit into {error_type}."));
+
+        output.push(transformed.to_string());
+    }
+
+    output
+}
+
+fn transform_ipaddr_values<T>(values: &[String], error_type: &str) -> Vec<String>
 where
     T: FromStr + ToString,
     <T as FromStr>::Err: Debug,
@@ -29,7 +57,6 @@ where
 
     for value in values.iter() {
         let transformed: T = value
-            .trim_start_matches("0x")
             .parse()
             .unwrap_or_else(|_| panic!("Value '{value}' is not {error_type}."));
 
@@ -55,15 +82,23 @@ fn get_transformed_option_value(
         }
         MicrosoftOptionDefinitionType::String => values,
         MicrosoftOptionDefinitionType::IPv4Address => {
-            transform_values::<Ipv4Addr>(&values, "IPv4 address")
+            transform_ipaddr_values::<Ipv4Addr>(&values, "IPv4 address")
         }
         MicrosoftOptionDefinitionType::IPv6Address => {
-            transform_values::<Ipv6Addr>(&values, "IPv6 address")
+            transform_ipaddr_values::<Ipv6Addr>(&values, "IPv6 address")
         }
-        MicrosoftOptionDefinitionType::Byte => transform_values::<u8>(&values, "1 byte"),
-        MicrosoftOptionDefinitionType::Word => transform_values::<u16>(&values, "2 bytes"),
-        MicrosoftOptionDefinitionType::DWord => transform_values::<u32>(&values, "4 bytes"),
-        MicrosoftOptionDefinitionType::DWordDWord => transform_values::<u64>(&values, "8 bytes"),
+        MicrosoftOptionDefinitionType::Byte => {
+            transform_numeric_values::<u8>(&values, "1 byte", true)
+        }
+        MicrosoftOptionDefinitionType::Word => {
+            transform_numeric_values::<u16>(&values, "2 bytes", false)
+        }
+        MicrosoftOptionDefinitionType::DWord => {
+            transform_numeric_values::<u32>(&values, "4 bytes", false)
+        }
+        MicrosoftOptionDefinitionType::DWordDWord => {
+            transform_numeric_values::<u64>(&values, "8 bytes", false)
+        }
     }
 }
 
@@ -79,6 +114,11 @@ pub fn ms_options_to_isc_options(
             .iter()
             .any(|item| item.code == ms_option.option_id)
         {
+            continue;
+        }
+
+        // Since option definitions do not export user classes, such options are skipped
+        if ms_option.user_class.is_some() && ms_option.vendor_class.is_none() {
             continue;
         }
 

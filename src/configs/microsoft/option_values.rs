@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 use crate::validators::validate_string_optional;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(rename = "OptionValue", rename_all = "PascalCase")]
 pub struct MicrosoftOptionValue {
     pub option_id: u8,
@@ -15,7 +15,7 @@ pub struct MicrosoftOptionValue {
     pub user_class: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(rename = "OptionValues")]
 pub struct MicrosoftOptionValues {
     #[serde(rename = "OptionValue")]

@@ -14,6 +14,7 @@ pub use filters::*;
 pub use option_definitions::*;
 pub use option_values::*;
 pub use policies::*;
+pub use scopes::*;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]

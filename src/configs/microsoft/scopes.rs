@@ -4,7 +4,10 @@ use std::net::Ipv4Addr;
 
 use serde::Deserialize;
 
-use crate::validators::validate_string_optional;
+use crate::{
+    configs::microsoft::{MicrosoftOptionValues, MicrosoftPolicies},
+    validators::validate_string_optional,
+};
 
 #[derive(Debug, Deserialize, PartialEq)]
 pub enum MicrosoftScopeStateType {
@@ -19,7 +22,8 @@ pub enum MicrosoftScopeType {
     Bootp,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(test, derive(PartialEq))]
 #[serde(rename = "IPRange", rename_all = "PascalCase")]
 pub struct MicrosoftIPRange {
     pub start_range: Ipv4Addr,
@@ -77,6 +81,10 @@ pub struct MicrosoftScopeV4 {
     #[serde(rename = "ExclusionRanges")]
     pub exclusion_ranges: Option<MicrosoftExclusionRanges>,
     pub reservations: Option<MicrosoftReservations>,
+    #[serde(rename = "Policies")]
+    pub policies: Option<MicrosoftPolicies>,
+    #[serde(rename = "OptionValues")]
+    pub option_values: Option<MicrosoftOptionValues>,
 }
 
 #[derive(Debug, Deserialize)]

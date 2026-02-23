@@ -3,3 +3,4 @@ pub mod filters;
 pub mod option_definitions;
 pub mod options;
 pub mod policies;
+pub mod scopes;

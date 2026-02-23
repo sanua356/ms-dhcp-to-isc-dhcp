@@ -5,12 +5,14 @@ pub mod hosts;
 pub mod option_definitions;
 pub mod options;
 pub mod subclasses;
+pub mod subnets;
 
 pub use classes::*;
 pub use hosts::*;
 pub use option_definitions::*;
 pub use options::*;
 pub use subclasses::*;
+pub use subnets::*;
 
 use crate::constants::{
     FILTER_ALLOW_CLASS, GLOBAL_ENCAPSULATED_CLASS, GLOBAL_ENCAPSULATED_SPACE,
@@ -24,8 +26,10 @@ pub struct ISCDHCP {
     pub options: Vec<options::ISCOption>,
     pub classes: Vec<classes::ISCClass>,
     pub policices_classes: Vec<classes::ISCClass>,
+    pub subnet_v4_classes: Vec<classes::ISCClass>,
     pub deny_filter_hosts: Vec<hosts::ISCHost>,
     pub allow_filter_subclasses: Vec<subclasses::ISCSubclass>,
+    pub subnets_v4: Vec<subnets::ISCSubnetV4>,
 }
 
 impl ISCDHCP {
@@ -35,8 +39,10 @@ impl ISCDHCP {
             options: vec![],
             classes: vec![],
             policices_classes: vec![],
+            subnet_v4_classes: vec![],
             deny_filter_hosts: vec![],
             allow_filter_subclasses: vec![],
+            subnets_v4: vec![],
         }
     }
 

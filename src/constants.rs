@@ -38,7 +38,16 @@ pub static RELAY_AGENT_SUBSCRIBER_ID_OPTION_DEFINITION: &str =
 
 pub static POLICY_PSEUDOCONDITION_FOR_DISABLE: &str = "\"enabled\" = \"true\"";
 pub static POLICY_CONDITION_OPERATORS: [&str; 2] = ["EQ", "NE"];
+pub static POLICY_SUBNET_PREFIX: &str = "INTERNAL--SUBNET-";
 /////////////////// MIGRATION SPECIFIC CONFIGURATION PARAMETERS ///////////////////////////
+
+pub static MICROSOFT_STANDARD_CLASSES: [&str; 5] = [
+    "Default Routing and Remote Access Class",
+    "Default BOOTP Class",
+    "Microsoft Windows 2000 Options",
+    "Microsoft Windows 98 Options",
+    "Microsoft Options",
+];
 
 // Information about the declared options is taken from the ISC DHCP documentation, KEA Docs and many RFCs
 pub static STANDARD_V4_ISC_OPTION_DEFINITIONS: LazyLock<Vec<ISCOptionDefinition>> =

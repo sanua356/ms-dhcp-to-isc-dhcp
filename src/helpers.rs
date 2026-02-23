@@ -1,10 +1,18 @@
 #![allow(dead_code)]
 
-use std::collections::HashMap;
+use std::{collections::HashMap, net::Ipv4Addr};
 
 use minijinja::Environment;
 
 use crate::constants::SINGLE_BYTE_WITH_PREFIX_REGEXP;
+
+pub fn ipv4_address_to_integer(ip_address: Ipv4Addr) -> u32 {
+    u32::from(ip_address)
+}
+
+pub fn integer_to_ipv4_address(value: u32) -> Ipv4Addr {
+    Ipv4Addr::from(value)
+}
 
 pub fn hex_to_ascii(hex_str: &str) -> String {
     let bytes = hex_str.trim_start_matches("0x").as_bytes();

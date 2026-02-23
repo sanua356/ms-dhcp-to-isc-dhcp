@@ -73,6 +73,115 @@ fn find_class_values_by_names(
     classes_values
 }
 
+pub fn ms_policies_to_isc_classes(
+    microsoft_policies: &[MicrosoftPolicy],
+    microsoft_option_definitions: &[MicrosoftOptionDefinition],
+    microsoft_classes: &[MicrosoftClass],
+) -> Vec<ISCClass> {
+    let mut classes: Vec<ISCClass> = Vec::new();
+
+    let mut sorted_policies: Vec<&MicrosoftPolicy> = microsoft_policies.iter().collect();
+    sorted_policies.sort_by_key(|item| item.processing_order);
+
+    for ms_policy in sorted_policies {
+        let name = format_string_isc(&ms_policy.name);
+        let mut options: Vec<ISCOption> = Vec::new();
+        let merge_operator = ms_policy.condition.to_string();
+        let mut conditions: Vec<String> = Vec::new();
+
+        if let Some(policy_options) = &ms_policy.option_values {
+            options.extend(ms_options_to_isc_options(
+                &policy_options.items,
+                microsoft_option_definitions,
+            ));
+        }
+
+        if let Some(vendor_class) = &ms_policy.vendor_class {
+            conditions.extend(get_policy_condition(
+                &find_class_values_by_names(
+                    vendor_class,
+                    microsoft_classes,
+                    MicrosoftClassType::Vendor,
+                ),
+                "option vendor-class-identifier",
+                false,
+            ));
+        }
+
+        if let Some(user_class) = &ms_policy.user_class {
+            conditions.extend(get_policy_condition(
+                &find_class_values_by_names(
+                    user_class,
+                    microsoft_classes,
+                    MicrosoftClassType::User,
+                ),
+                "option user-class",
+                false,
+            ));
+        }
+
+        if let Some(mac_address) = &ms_policy.mac_address {
+            conditions.extend(get_policy_condition(mac_address, "hardware", true));
+        }
+
+        if let Some(client_id) = &ms_policy.client_id {
+            conditions.extend(get_policy_condition(
+                client_id,
+                "option dhcp-client-identifier",
+                true,
+            ));
+        }
+
+        if let Some(fqdn) = &ms_policy.fqdn {
+            conditions.extend(get_policy_condition(fqdn, "option fqdn.fqdn", false));
+        }
+
+        if let Some(circuit_id) = &ms_policy.circuit_id {
+            conditions.extend(get_policy_condition(
+                circuit_id,
+                "option agent.circuit-id",
+                true,
+            ));
+        }
+
+        if let Some(remote_id) = &ms_policy.remote_id {
+            conditions.extend(get_policy_condition(
+                remote_id,
+                "option agent.remote-id",
+                true,
+            ));
+        }
+
+        if let Some(subscriber_id) = &ms_policy.subscriber_id {
+            conditions.extend(get_policy_condition(
+                subscriber_id,
+                "option agent.subscriber-id",
+                true,
+            ));
+        }
+
+        if conditions.is_empty() {
+            continue;
+        }
+
+        let mut condition_string = conditions.join(format!(" {merge_operator} ").as_str());
+
+        if !ms_policy.enabled {
+            condition_string =
+                format!("{POLICY_PSEUDOCONDITION_FOR_DISABLE} and ({condition_string})");
+        }
+
+        classes.push(ISCClass {
+            name,
+            condition: format!("if {condition_string}"),
+            vendor_option_space: None,
+            options: Some(options),
+        });
+    }
+
+    classes
+}
+
 impl ISCDHCP {
     pub fn transform_policies(
         &mut self,
@@ -80,108 +189,11 @@ impl ISCDHCP {
         microsoft_option_definitions: &[MicrosoftOptionDefinition],
         microsoft_classes: &[MicrosoftClass],
     ) {
-        let mut classes: Vec<ISCClass> = Vec::new();
-
-        let mut sorted_policies: Vec<&MicrosoftPolicy> = microsoft_policies.iter().collect();
-        sorted_policies.sort_by_key(|item| item.processing_order);
-
-        for ms_policy in sorted_policies {
-            let name = format_string_isc(&ms_policy.name);
-            let mut options: Vec<ISCOption> = Vec::new();
-            let merge_operator = ms_policy.condition.to_string();
-            let mut conditions: Vec<String> = Vec::new();
-
-            if let Some(policy_options) = &ms_policy.option_values {
-                options.extend(ms_options_to_isc_options(
-                    &policy_options.items,
-                    microsoft_option_definitions,
-                ));
-            }
-
-            if let Some(vendor_class) = &ms_policy.vendor_class {
-                conditions.extend(get_policy_condition(
-                    &find_class_values_by_names(
-                        vendor_class,
-                        microsoft_classes,
-                        MicrosoftClassType::Vendor,
-                    ),
-                    "option vendor-class-identifier",
-                    false,
-                ));
-            }
-
-            if let Some(user_class) = &ms_policy.user_class {
-                conditions.extend(get_policy_condition(
-                    &find_class_values_by_names(
-                        user_class,
-                        microsoft_classes,
-                        MicrosoftClassType::User,
-                    ),
-                    "option user-class",
-                    false,
-                ));
-            }
-
-            if let Some(mac_address) = &ms_policy.mac_address {
-                conditions.extend(get_policy_condition(mac_address, "hardware", true));
-            }
-
-            if let Some(client_id) = &ms_policy.client_id {
-                conditions.extend(get_policy_condition(
-                    client_id,
-                    "option dhcp-client-identifier",
-                    true,
-                ));
-            }
-
-            if let Some(fqdn) = &ms_policy.fqdn {
-                conditions.extend(get_policy_condition(fqdn, "option fqdn.fqdn", false));
-            }
-
-            if let Some(circuit_id) = &ms_policy.circuit_id {
-                conditions.extend(get_policy_condition(
-                    circuit_id,
-                    "option agent.circuit-id",
-                    true,
-                ));
-            }
-
-            if let Some(remote_id) = &ms_policy.remote_id {
-                conditions.extend(get_policy_condition(
-                    remote_id,
-                    "option agent.remote-id",
-                    true,
-                ));
-            }
-
-            if let Some(subscriber_id) = &ms_policy.subscriber_id {
-                conditions.extend(get_policy_condition(
-                    subscriber_id,
-                    "option agent.subscriber-id",
-                    true,
-                ));
-            }
-
-            if conditions.is_empty() {
-                continue;
-            }
-
-            let mut condition_string = conditions.join(format!(" {merge_operator} ").as_str());
-
-            if !ms_policy.enabled {
-                condition_string =
-                    format!("{POLICY_PSEUDOCONDITION_FOR_DISABLE} and ({condition_string})");
-            }
-
-            classes.push(ISCClass {
-                name,
-                condition: format!("if {condition_string}"),
-                vendor_option_space: None,
-                options: Some(options),
-            });
-        }
-
-        self.policices_classes.extend(classes);
+        self.policices_classes.extend(ms_policies_to_isc_classes(
+            microsoft_policies,
+            microsoft_option_definitions,
+            microsoft_classes,
+        ));
     }
 
     pub fn write_transformed_policies(&self, config: &mut String) {
