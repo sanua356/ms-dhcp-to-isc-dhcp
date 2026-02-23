@@ -1,6 +1,9 @@
 use std::{collections::HashMap, fmt::Display, net::Ipv4Addr};
 
-use crate::{configs::isc::ISCOption, helpers::render_template};
+use crate::{
+    configs::isc::{ISCHost, ISCOption},
+    helpers::render_template,
+};
 
 #[derive(Debug, PartialEq)]
 #[allow(clippy::upper_case_acronyms)]
@@ -73,6 +76,7 @@ pub struct ISCSubnetV4 {
     pub max_lease_time: i32,
 
     pub options: Option<Vec<ISCOption>>,
+    pub reservations: Option<Vec<ISCHost>>,
 }
 
 const SUBNET_SERIALIZER_TEMPLATE: &str = r#"
@@ -89,6 +93,10 @@ deny bootp;
 
 {%- if options %}
 {{options}}
+{%- endif %}
+
+{%- if reservations %}
+{{reservations}}
 {%- endif %}
 }
 "#;
@@ -125,6 +133,18 @@ impl Display for ISCSubnetV4 {
         );
 
         arguments.insert("pools", pools);
+
+        if let Some(reservations) = &self.reservations {
+            let output: Option<String> = Some(
+                reservations
+                    .iter()
+                    .map(|item| item.to_string())
+                    .collect::<Vec<String>>()
+                    .join("\n"),
+            );
+
+            arguments.insert("reservations", output);
+        }
 
         f.write_str(render_template(SUBNET_SERIALIZER_TEMPLATE, arguments).as_str())
     }

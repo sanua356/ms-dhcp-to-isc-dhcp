@@ -212,6 +212,7 @@ pub static SUBNETS_ISC_TEST_TEMPLATE: LazyLock<Vec<ISCSubnetV4>> = LazyLock::new
         default_lease_time: 691200,
         max_lease_time: 691200,
         r#type: ISCSubnetV4Type::DHCP,
+        reservations: Some(vec![]),
         pools: vec![
             ISCPoolV4 {
                 start_range: Ipv4Addr::new(1, 2, 3, 4),

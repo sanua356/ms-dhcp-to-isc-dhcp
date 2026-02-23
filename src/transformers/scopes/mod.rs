@@ -5,7 +5,10 @@ use regex::Regex;
 use crate::{
     configs::{
         ISCDHCP,
-        isc::{ISCClass, ISCPoolV4, ISCSubnetV4, ISCSubnetV4Type},
+        isc::{
+            ISCClass, ISCHost, ISCOption, ISCOptionDefinitionType, ISCPoolV4, ISCSubnetV4,
+            ISCSubnetV4Type,
+        },
         microsoft::{
             MicrosoftClass, MicrosoftFilters, MicrosoftIPRange, MicrosoftOptionDefinition,
             MicrosoftPolicy, MicrosoftScopeType, MicrosoftScopeV4,
@@ -156,12 +159,37 @@ impl ISCDHCP {
 
             let lease_time = get_lease_time(scope.lease_duration.to_owned());
 
+            let mut reservations: Vec<ISCHost> = Vec::new();
+
+            if let Some(ms_reservations) = &scope.reservations {
+                reservations.extend(
+                    ms_reservations
+                        .items
+                        .iter()
+                        .map(|item| ISCHost {
+                            name: item.name.clone().unwrap_or_default(),
+                            fixed_address: Some(vec![item.ip_address]),
+                            mac_address: None,
+                            options: Some(vec![ISCOption {
+                                name: String::from("dhcp-client-identifier"),
+                                space: None,
+                                r#type: ISCOptionDefinitionType::Arrays(Box::new(
+                                    ISCOptionDefinitionType::UInt8,
+                                )),
+                                value: vec![item.client_id.replace("-", ":")],
+                            }]),
+                        })
+                        .collect::<Vec<ISCHost>>(),
+                );
+            }
+
             classes.extend(policies);
             subnets.push(ISCSubnetV4 {
                 id: scope.scope_id,
                 netmask: scope.subnet_mask,
                 r#type: scope_type,
                 pools,
+                reservations: Some(reservations),
                 options: Some(ms_options_to_isc_options(
                     options,
                     microsoft_option_definitions,
