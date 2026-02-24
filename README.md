@@ -35,7 +35,7 @@ The migration utility cannot migrate the following parameters:
 
 |Microsoft configuration part|Why|
 |--|--|
-|Options with User Class|Option definitions with client classes are not exported from the configuration, and their type cannot be calculated|
+|Options with User Class|Option definitions with user classes are not exported from the configuration, and their type cannot be calculated|
 |Policy IP Ranges|It is not possible to cover all migration scenarios correctly. Perhaps support will appear in the future|
 |DNS Settings|Are not exported to the configuration|
 |Leases|There is no need for migration, these parameters will appear when clients request addresses|
