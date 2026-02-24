@@ -27,7 +27,7 @@ The migration utility allows you to successfully migrate the following parameter
 |Options (including vendor options)|Options|
 |Policies|Classes, Option spaces, Options|
 |Filters|Classes, Subclasses, Hosts|
-|Scopes|Subnets, Classes, Option spaces, Options, Hosts|
+|Scopes (including superscopes)|Subnets, Shared networks, Classes, Option spaces, Options, Hosts|
 
 ## NOT Migrated
 
@@ -40,7 +40,6 @@ The migration utility cannot migrate the following parameters:
 |DNS Settings|Are not exported to the configuration|
 |Leases|There is no need for migration, these parameters will appear when clients request addresses|
 |High Availability|Linking the "MS - ISC" format servers is impossible, migration does not make sense|
-|Superscopes|Migration is possible and will appear in the future|
 |Multicast scopes|Are not exported to the configuration|
 |Policy "RelayAgent" condition|There is no direct equivalent in the ISC configuration|
 
