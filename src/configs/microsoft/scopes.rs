@@ -9,13 +9,13 @@ use crate::{
     validators::validate_string_optional,
 };
 
-#[derive(Debug, Deserialize, PartialEq)]
+#[derive(Debug, Deserialize, PartialEq, Clone)]
 pub enum MicrosoftScopeStateType {
     Active,
     Inactive,
 }
 
-#[derive(Debug, Deserialize, PartialEq)]
+#[derive(Debug, Deserialize, PartialEq, Clone)]
 pub enum MicrosoftScopeType {
     Both,
     Dhcp,
@@ -30,14 +30,14 @@ pub struct MicrosoftIPRange {
     pub end_range: Ipv4Addr,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(rename = "ExclusionRanges")]
 pub struct MicrosoftExclusionRanges {
     #[serde(rename = "IPRange")]
     pub items: Vec<MicrosoftIPRange>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(rename = "Reservation", rename_all = "PascalCase")]
 pub struct MicrosoftResevation {
     #[serde(default, deserialize_with = "validate_string_optional")]
@@ -50,14 +50,14 @@ pub struct MicrosoftResevation {
     pub description: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(rename = "Reservations")]
 pub struct MicrosoftReservations {
     #[serde(rename = "Reservation")]
     pub items: Vec<MicrosoftResevation>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(rename = "Scope", rename_all = "PascalCase")]
 pub struct MicrosoftScopeV4 {
     pub scope_id: Ipv4Addr,

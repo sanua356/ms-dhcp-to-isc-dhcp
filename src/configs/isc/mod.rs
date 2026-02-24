@@ -2,6 +2,7 @@ pub mod classes;
 pub mod hosts;
 pub mod option_definitions;
 pub mod options;
+pub mod shared_networks;
 pub mod subclasses;
 pub mod subnets;
 
@@ -9,6 +10,7 @@ pub use classes::*;
 pub use hosts::*;
 pub use option_definitions::*;
 pub use options::*;
+pub use shared_networks::*;
 pub use subclasses::*;
 pub use subnets::*;
 
@@ -31,6 +33,7 @@ pub struct ISCDHCP {
     pub deny_filter_hosts: Vec<hosts::ISCHost>,
     pub allow_filter_subclasses: Vec<subclasses::ISCSubclass>,
     pub subnets_v4: Vec<subnets::ISCSubnetV4>,
+    pub shared_networks_v4: Vec<shared_networks::ISCSharedNetworkV4>,
 }
 
 impl ISCDHCP {
@@ -44,6 +47,7 @@ impl ISCDHCP {
             deny_filter_hosts: vec![],
             allow_filter_subclasses: vec![],
             subnets_v4: vec![],
+            shared_networks_v4: vec![],
         }
     }
 

@@ -6,7 +6,10 @@ use std::sync::LazyLock;
 
 #[cfg(test)]
 use crate::{
-    configs::isc::{ISCOption, ISCOptionDefinitionType, ISCPoolV4, ISCSubnetV4, ISCSubnetV4Type},
+    configs::isc::{
+        ISCOption, ISCOptionDefinitionType, ISCPoolV4, ISCSharedNetworkV4, ISCSubnetV4,
+        ISCSubnetV4Type,
+    },
     constants::FILTER_ALLOW_CLASS_NAME,
 };
 
@@ -98,6 +101,23 @@ pub static SCOPES_XML_TEST_TEMPLATE: &str = r#"
       <UserClass />
     </OptionValue>
   </OptionValues>
+</Scope>
+<Scope>
+  <ScopeId>1.1.1.0</ScopeId>
+  <Name>superscope</Name>
+  <SubnetMask>255.255.255.0</SubnetMask>
+  <StartRange>1.1.1.20</StartRange>
+  <EndRange>1.1.1.30</EndRange>
+  <LeaseDuration>10675199.02:48:05.4775807</LeaseDuration>
+  <State>Inactive</State>
+  <Type>Both</Type>
+  <MaxBootpClients>4294967295</MaxBootpClients>
+  <NapEnable>false</NapEnable>
+  <Delay>5</Delay>
+  <NapProfile />
+  <Description>qqq</Description>
+  <ActivatePolicies>true</ActivatePolicies>
+  <SuperScopeName>testsuperscope</SuperScopeName>
 </Scope>
 "#;
 
@@ -249,6 +269,29 @@ pub static SUBNETS_ISC_TEST_TEMPLATE: LazyLock<Vec<ISCSubnetV4>> = LazyLock::new
 });
 
 #[cfg(test)]
+pub static SHARED_NETWORKS_ISC_TEST_TEMPLATE: LazyLock<Vec<ISCSharedNetworkV4>> =
+    LazyLock::new(|| {
+        vec![ISCSharedNetworkV4 {
+            name: String::from("testsuperscope"),
+            subnets: vec![ISCSubnetV4 {
+                id: Ipv4Addr::new(1, 1, 1, 0),
+                netmask: Ipv4Addr::new(255, 255, 255, 0),
+                min_lease_time: 2147483647,
+                default_lease_time: 2147483647,
+                max_lease_time: 2147483647,
+                r#type: ISCSubnetV4Type::Both,
+                reservations: Some(vec![]),
+                pools: vec![ISCPoolV4 {
+                    start_range: Ipv4Addr::new(1, 1, 1, 20),
+                    end_range: Ipv4Addr::new(1, 1, 1, 30),
+                    classes_names: Some(vec![String::from(FILTER_ALLOW_CLASS_NAME)]),
+                }],
+                options: Some(vec![]),
+            }],
+        }]
+    });
+
+#[cfg(test)]
 pub static SCOPES_TRANSFORMED_TEST_TEMPLATE: &str = r#"
 class "INTERNAL--SUBNET--testpolicy3" {
 	match if option vendor-class-identifier = "MSFT" or option vendor-class-identifier = "MSFT 5.0";
@@ -274,5 +317,19 @@ max-lease-time 691200;
 deny bootp;
 option domain-name-servers 10.81.0.251, 1.2.3.100;
 option dhcp-lease-time 691200;
+}
+shared-network "testsuperscope" {
+
+subnet 1.1.1.0 netmask 255.255.255.0 {
+
+pool {
+	range 1.1.1.20 1.1.1.30;
+	allow members of "INTERNAL--allow-filter";
+}
+
+min-lease-time 2147483647;
+default-lease-time 2147483647;
+max-lease-time 2147483647;
+}
 }
 "#;

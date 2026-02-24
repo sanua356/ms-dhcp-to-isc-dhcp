@@ -1,4 +1,4 @@
-use std::net::Ipv4Addr;
+use std::{collections::HashSet, net::Ipv4Addr};
 
 use regex::Regex;
 
@@ -6,8 +6,8 @@ use crate::{
     configs::{
         ISCDHCP,
         isc::{
-            ISCClass, ISCHost, ISCOption, ISCOptionDefinitionType, ISCPoolV4, ISCSubnetV4,
-            ISCSubnetV4Type,
+            ISCClass, ISCHost, ISCOption, ISCOptionDefinitionType, ISCPoolV4, ISCSharedNetworkV4,
+            ISCSubnetV4, ISCSubnetV4Type,
         },
         microsoft::{
             MicrosoftClass, MicrosoftFilters, MicrosoftIPRange, MicrosoftOptionDefinition,
@@ -94,6 +94,111 @@ fn get_lease_time(lease_time: String) -> i32 {
     0
 }
 
+fn ms_scopes_to_isc_subnets(
+    microsoft_scopes: &[MicrosoftScopeV4],
+    microsoft_option_definitions: &[MicrosoftOptionDefinition],
+    microsoft_classes: &[MicrosoftClass],
+    microsoft_filters: &MicrosoftFilters,
+) -> (Vec<ISCSubnetV4>, Vec<ISCClass>) {
+    let mut subnets: Vec<ISCSubnetV4> = Vec::new();
+    let mut classes: Vec<ISCClass> = Vec::new();
+
+    for scope in microsoft_scopes {
+        let exclusion_ranges = match &scope.exclusion_ranges {
+            Some(obj) => &obj.items,
+            None => &vec![],
+        };
+        let policies: &Vec<MicrosoftPolicy> = match &scope.policies {
+            Some(obj) => &obj
+                .items
+                .iter()
+                .filter(|item| !MICROSOFT_STANDARD_CLASSES.contains(&item.name.as_str()))
+                .cloned()
+                .collect(),
+            None => &vec![],
+        };
+        let options = match &scope.option_values {
+            Some(obj) => &obj.items,
+            None => &vec![],
+        };
+        let ms_pools = get_allowed_ranges(scope.start_range, scope.end_range, exclusion_ranges);
+
+        let policies: Vec<ISCClass> =
+            ms_policies_to_isc_classes(policies, microsoft_option_definitions, microsoft_classes)
+                .into_iter()
+                .map(|mut item| {
+                    item.name = format!("{POLICY_SUBNET_PREFIX}-{}", item.name);
+                    item
+                })
+                .collect();
+        let scope_type = match scope.r#type {
+            MicrosoftScopeType::Both => ISCSubnetV4Type::Both,
+            MicrosoftScopeType::Dhcp => ISCSubnetV4Type::DHCP,
+            MicrosoftScopeType::Bootp => ISCSubnetV4Type::BOOTP,
+        };
+        let mut classes_names: Vec<String> =
+            policies.iter().map(|item| item.name.clone()).collect();
+
+        if microsoft_filters.allow {
+            classes_names.push(FILTER_ALLOW_CLASS_NAME.to_string());
+        }
+
+        let pools: Vec<ISCPoolV4> = ms_pools
+            .into_iter()
+            .map(|item| ISCPoolV4 {
+                start_range: item.start_range,
+                end_range: item.end_range,
+                classes_names: Some(classes_names.clone()),
+            })
+            .collect();
+
+        let lease_time = get_lease_time(scope.lease_duration.to_owned());
+
+        let mut reservations: Vec<ISCHost> = Vec::new();
+
+        if let Some(ms_reservations) = &scope.reservations {
+            reservations.extend(
+                ms_reservations
+                    .items
+                    .iter()
+                    .enumerate()
+                    .map(|(idx, item)| ISCHost {
+                        name: item.name.clone().unwrap_or(format!("reservation-{idx}")),
+                        fixed_address: Some(vec![item.ip_address]),
+                        mac_address: None,
+                        options: Some(vec![ISCOption {
+                            name: String::from("dhcp-client-identifier"),
+                            space: None,
+                            r#type: ISCOptionDefinitionType::Arrays(Box::new(
+                                ISCOptionDefinitionType::UInt8,
+                            )),
+                            value: vec![item.client_id.replace("-", ":")],
+                        }]),
+                    })
+                    .collect::<Vec<ISCHost>>(),
+            );
+        }
+
+        classes.extend(policies);
+        subnets.push(ISCSubnetV4 {
+            id: scope.scope_id,
+            netmask: scope.subnet_mask,
+            r#type: scope_type,
+            pools,
+            reservations: Some(reservations),
+            options: Some(ms_options_to_isc_options(
+                options,
+                microsoft_option_definitions,
+            )),
+            default_lease_time: lease_time,
+            max_lease_time: lease_time,
+            min_lease_time: lease_time,
+        });
+    }
+
+    (subnets, classes)
+}
+
 impl ISCDHCP {
     pub fn transform_scopes_v4(
         &mut self,
@@ -102,107 +207,46 @@ impl ISCDHCP {
         microsoft_classes: &[MicrosoftClass],
         microsoft_filters: &MicrosoftFilters,
     ) {
-        let mut subnets: Vec<ISCSubnetV4> = Vec::new();
-        let mut classes: Vec<ISCClass> = Vec::new();
-
-        for scope in microsoft_scopes {
-            let exclusion_ranges = match &scope.exclusion_ranges {
-                Some(obj) => &obj.items,
-                None => &vec![],
-            };
-            let policies: &Vec<MicrosoftPolicy> = match &scope.policies {
-                Some(obj) => &obj
-                    .items
-                    .iter()
-                    .filter(|item| !MICROSOFT_STANDARD_CLASSES.contains(&item.name.as_str()))
-                    .cloned()
-                    .collect(),
-                None => &vec![],
-            };
-            let options = match &scope.option_values {
-                Some(obj) => &obj.items,
-                None => &vec![],
-            };
-            let ms_pools = get_allowed_ranges(scope.start_range, scope.end_range, exclusion_ranges);
-
-            let policies: Vec<ISCClass> = ms_policies_to_isc_classes(
-                policies,
-                microsoft_option_definitions,
-                microsoft_classes,
-            )
-            .into_iter()
-            .map(|mut item| {
-                item.name = format!("{POLICY_SUBNET_PREFIX}-{}", item.name);
-                item
-            })
+        let independent_scopes: Vec<MicrosoftScopeV4> = microsoft_scopes
+            .iter()
+            .filter(|item| item.super_scope_name.is_none())
+            .cloned()
             .collect();
-            let scope_type = match scope.r#type {
-                MicrosoftScopeType::Both => ISCSubnetV4Type::Both,
-                MicrosoftScopeType::Dhcp => ISCSubnetV4Type::DHCP,
-                MicrosoftScopeType::Bootp => ISCSubnetV4Type::BOOTP,
-            };
-            let mut classes_names: Vec<String> =
-                policies.iter().map(|item| item.name.clone()).collect();
 
-            if microsoft_filters.allow {
-                classes_names.push(FILTER_ALLOW_CLASS_NAME.to_string());
-            }
+        let independent_results = ms_scopes_to_isc_subnets(
+            &independent_scopes,
+            microsoft_option_definitions,
+            microsoft_classes,
+            microsoft_filters,
+        );
+        self.subnets_v4.extend(independent_results.0);
+        self.subnet_v4_classes.extend(independent_results.1);
 
-            let pools: Vec<ISCPoolV4> = ms_pools
-                .into_iter()
-                .map(|item| ISCPoolV4 {
-                    start_range: item.start_range,
-                    end_range: item.end_range,
-                    classes_names: Some(classes_names.clone()),
-                })
+        let superscopes_names: HashSet<String> = microsoft_scopes
+            .iter()
+            .filter(|item| item.super_scope_name.is_some())
+            .map(|item| item.super_scope_name.clone().unwrap_or_default())
+            .collect();
+
+        for superscope_name in superscopes_names.into_iter() {
+            let superscope: Vec<MicrosoftScopeV4> = microsoft_scopes
+                .iter()
+                .filter(|item| item.super_scope_name == Some(superscope_name.to_owned()))
+                .cloned()
                 .collect();
 
-            let lease_time = get_lease_time(scope.lease_duration.to_owned());
-
-            let mut reservations: Vec<ISCHost> = Vec::new();
-
-            if let Some(ms_reservations) = &scope.reservations {
-                reservations.extend(
-                    ms_reservations
-                        .items
-                        .iter()
-                        .enumerate()
-                        .map(|(idx, item)| ISCHost {
-                            name: item.name.clone().unwrap_or(format!("reservation-{idx}")),
-                            fixed_address: Some(vec![item.ip_address]),
-                            mac_address: None,
-                            options: Some(vec![ISCOption {
-                                name: String::from("dhcp-client-identifier"),
-                                space: None,
-                                r#type: ISCOptionDefinitionType::Arrays(Box::new(
-                                    ISCOptionDefinitionType::UInt8,
-                                )),
-                                value: vec![item.client_id.replace("-", ":")],
-                            }]),
-                        })
-                        .collect::<Vec<ISCHost>>(),
-                );
-            }
-
-            classes.extend(policies);
-            subnets.push(ISCSubnetV4 {
-                id: scope.scope_id,
-                netmask: scope.subnet_mask,
-                r#type: scope_type,
-                pools,
-                reservations: Some(reservations),
-                options: Some(ms_options_to_isc_options(
-                    options,
-                    microsoft_option_definitions,
-                )),
-                default_lease_time: lease_time,
-                max_lease_time: lease_time,
-                min_lease_time: lease_time,
+            let superscope_results = ms_scopes_to_isc_subnets(
+                &superscope,
+                microsoft_option_definitions,
+                microsoft_classes,
+                microsoft_filters,
+            );
+            self.shared_networks_v4.push(ISCSharedNetworkV4 {
+                name: superscope_name,
+                subnets: superscope_results.0,
             });
+            self.subnet_v4_classes.extend(superscope_results.1);
         }
-
-        self.subnet_v4_classes.extend(classes);
-        self.subnets_v4.extend(subnets);
     }
 
     pub fn write_transformed_scopes(&self, config: &mut String) {
@@ -211,6 +255,9 @@ impl ISCDHCP {
         }
         for subnet in self.subnets_v4.iter() {
             config.push_str(subnet.to_string().as_str());
+        }
+        for shared_network in self.shared_networks_v4.iter() {
+            config.push_str(shared_network.to_string().as_str());
         }
     }
 }
@@ -236,7 +283,7 @@ mod test {
         transformers::scopes::_tests::{
             CLASSES_XML_TEST_TEMPLATE, FILTERS_XML_TEST_TEMPLATE,
             OPTION_DEFINITIONS_XML_TEST_TEMPLATE, SCOPES_TRANSFORMED_TEST_TEMPLATE,
-            SCOPES_XML_TEST_TEMPLATE, SUBNETS_ISC_TEST_TEMPLATE,
+            SCOPES_XML_TEST_TEMPLATE, SHARED_NETWORKS_ISC_TEST_TEMPLATE, SUBNETS_ISC_TEST_TEMPLATE,
         },
     };
 
@@ -323,6 +370,11 @@ mod test {
         for (idx, item) in isc_config.subnets_v4.iter().enumerate() {
             if item != &SUBNETS_ISC_TEST_TEMPLATE[idx] {
                 panic!("{:?}, {:?}", item, SUBNETS_ISC_TEST_TEMPLATE[idx]);
+            }
+        }
+        for (idx, item) in isc_config.shared_networks_v4.iter().enumerate() {
+            if item != &SHARED_NETWORKS_ISC_TEST_TEMPLATE[idx] {
+                panic!("{:?}, {:?}", item, SHARED_NETWORKS_ISC_TEST_TEMPLATE[idx]);
             }
         }
 

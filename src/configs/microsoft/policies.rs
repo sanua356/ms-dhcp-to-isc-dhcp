@@ -56,7 +56,7 @@ pub struct MicrosoftPolicy {
     pub fqdn: Option<Vec<String>>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(rename = "Policies")]
 pub struct MicrosoftPolicies {
     #[serde(rename = "Policy")]
