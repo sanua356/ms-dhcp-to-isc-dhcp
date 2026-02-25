@@ -43,6 +43,26 @@ The migration utility cannot migrate the following parameters:
 |Multicast scopes|Are not exported to the configuration|
 |Policy "RelayAgent" condition|There is no direct equivalent in the ISC configuration|
 
+## Build CLI
+
+1. Install Rust Compiler from [offical site.](https://rust-lang.org/)
+2. Clone repository: `git clone https://github.com/sanua356/ms-dhcp-to-isc-dhcp.git`.
+3. Go to cloned repository folder: `cd ./ms-dhcp-to-isc-dhcp`.
+4. Run build command: `cargo build --release`.
+5. Find builded binary file `dhcp-ms-to-isc-dhcp` by path: `./target/release`.  
+
+## Build WASM
+
+1. Install Rust Compiler from [offical site.](https://rust-lang.org/)
+2. Clone repository: `git clone https://github.com/sanua356/ms-dhcp-to-isc-dhcp.git`.
+3. Go to cloned repository folder: `cd ./ms-dhcp-to-isc-dhcp`.
+4. Run install wasm-pack command: `cargo install wasm-pack`.
+5. Run build command: `wasm-pack build --target web --release`.
+6. Find builded files in `pkg` directory.
+
+> [!NOTE]  
+> An HTML template has been prepared for WASM in the project, where the final assembly can be tested. Move the `pkg` directory inside the `_static` directory and start distributing static files by any available web server.
+
 ## License
 
 [GPLv3](https://www.gnu.org/licenses/gpl-3.0.html)
