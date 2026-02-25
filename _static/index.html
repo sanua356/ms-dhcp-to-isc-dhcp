@@ -211,6 +211,10 @@
 		const input_field = document.querySelector("#input");
 		const output_field = document.querySelector("#output");
 
+		input_field.addEventListener('input', () => {
+			input_field.classList.remove("error");
+		}, false);
+
 		convert_button.addEventListener("click", () => {
 			try {
 				input_field.classList.remove("error");
