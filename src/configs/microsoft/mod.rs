@@ -34,10 +34,20 @@ pub struct MicrosoftIPv4 {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
+pub struct MicrosoftIPv6 {
+    pub classes: Option<classes::MicrosoftClasses>,
+    pub option_definitions: Option<option_definitions::MicrosoftOptionDefinitions>,
+    pub option_values: Option<option_values::MicrosoftOptionValues>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "PascalCase")]
 pub struct MicrosoftDHCP {
     pub major_version: u32,
     pub minor_version: u32,
 
     #[serde(rename = "IPv4")]
     pub ipv4: MicrosoftIPv4,
+    #[serde(rename = "IPv6")]
+    pub ipv6: MicrosoftIPv6,
 }
