@@ -59,25 +59,41 @@ impl ISCDHCP {
     }
 
     pub fn transform_v4(&mut self, microsoft_config: MicrosoftDHCP) {
-        let defs = microsoft_config.ipv4.option_definitions.unwrap().items;
-        let classes = microsoft_config.ipv4.classes.unwrap().items;
-        let filters = microsoft_config.ipv4.filters.unwrap();
+        let defs = microsoft_config
+            .ipv4
+            .option_definitions
+            .map(|data| data.items)
+            .unwrap_or_default();
+        let classes = microsoft_config
+            .ipv4
+            .classes
+            .map(|data| data.items)
+            .unwrap_or_default();
+        let filters = microsoft_config.ipv4.filters;
+        let option_values = microsoft_config
+            .ipv4
+            .option_values
+            .map(|data| data.items)
+            .unwrap_or_default();
+        let policies = microsoft_config
+            .ipv4
+            .policies
+            .map(|data| data.items)
+            .unwrap_or_default();
+        let scopes_v4 = microsoft_config
+            .ipv4
+            .scopes
+            .map(|data| data.items)
+            .unwrap_or_default();
 
         self.transform_option_definitions(&defs);
-        self.transform_options(&microsoft_config.ipv4.option_values.unwrap().items, &defs);
+        self.transform_options(&option_values, &defs);
         self.transform_classes(&classes);
-        self.transform_policies(
-            &microsoft_config.ipv4.policies.unwrap().items,
-            &defs,
-            &classes,
-        );
-        self.transform_filters(&filters);
-        self.transform_scopes_v4(
-            &microsoft_config.ipv4.scopes.unwrap().items,
-            &defs,
-            &classes,
-            &filters,
-        );
+        self.transform_policies(&policies, &defs, &classes);
+        if let Some(data) = &filters {
+            self.transform_filters(data);
+        }
+        self.transform_scopes_v4(&scopes_v4, &defs, &classes, &filters);
     }
 
     pub fn write_v4(&self) -> String {

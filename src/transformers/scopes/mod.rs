@@ -98,7 +98,7 @@ fn ms_scopes_to_isc_subnets(
     microsoft_scopes: &[MicrosoftScopeV4],
     microsoft_option_definitions: &[MicrosoftOptionDefinition],
     microsoft_classes: &[MicrosoftClass],
-    microsoft_filters: &MicrosoftFilters,
+    microsoft_filters: &Option<MicrosoftFilters>,
 ) -> (Vec<ISCSubnetV4>, Vec<ISCClass>) {
     let mut subnets: Vec<ISCSubnetV4> = Vec::new();
     let mut classes: Vec<ISCClass> = Vec::new();
@@ -139,7 +139,9 @@ fn ms_scopes_to_isc_subnets(
         let mut classes_names: Vec<String> =
             policies.iter().map(|item| item.name.clone()).collect();
 
-        if microsoft_filters.allow {
+        if let Some(filters) = microsoft_filters
+            && filters.allow
+        {
             classes_names.push(FILTER_ALLOW_CLASS_NAME.to_string());
         }
 
@@ -205,7 +207,7 @@ impl ISCDHCP {
         microsoft_scopes: &[MicrosoftScopeV4],
         microsoft_option_definitions: &[MicrosoftOptionDefinition],
         microsoft_classes: &[MicrosoftClass],
-        microsoft_filters: &MicrosoftFilters,
+        microsoft_filters: &Option<MicrosoftFilters>,
     ) {
         let independent_scopes: Vec<MicrosoftScopeV4> = microsoft_scopes
             .iter()
@@ -365,7 +367,7 @@ mod test {
         let ms_scopes: Vec<MicrosoftScopeV4> = from_str(SCOPES_XML_TEST_TEMPLATE).unwrap();
 
         let mut isc_config: ISCDHCP = ISCDHCP::default();
-        isc_config.transform_scopes_v4(&ms_scopes, &ms_option_defs, &ms_classes, &ms_filters);
+        isc_config.transform_scopes_v4(&ms_scopes, &ms_option_defs, &ms_classes, &Some(ms_filters));
 
         for (idx, item) in isc_config.subnets_v4.iter().enumerate() {
             if item != &SUBNETS_ISC_TEST_TEMPLATE[idx] {
@@ -392,7 +394,7 @@ mod test {
         let mut x = String::new();
 
         let mut isc_config: ISCDHCP = ISCDHCP::default();
-        isc_config.transform_scopes_v4(&ms_scopes, &ms_option_defs, &ms_classes, &ms_filters);
+        isc_config.transform_scopes_v4(&ms_scopes, &ms_option_defs, &ms_classes, &Some(ms_filters));
         isc_config.write_transformed_scopes(&mut x);
 
         assert_eq!(x.trim(), SCOPES_TRANSFORMED_TEST_TEMPLATE.trim());
