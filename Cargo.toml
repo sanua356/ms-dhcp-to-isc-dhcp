@@ -1,6 +1,6 @@
 [package]
 name = "dhcp-ms-to-isc-dhcp"
-version = "1.2.2"
+version = "1.2.3"
 edition = "2024"
 
 [lib]
