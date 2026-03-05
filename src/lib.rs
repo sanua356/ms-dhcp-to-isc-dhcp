@@ -2,6 +2,7 @@ use wasm_bindgen::prelude::*;
 
 mod configs;
 mod constants;
+mod default_options;
 mod helpers;
 mod transformers;
 mod transliterator;

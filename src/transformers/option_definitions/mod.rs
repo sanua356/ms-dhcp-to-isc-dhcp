@@ -1,13 +1,13 @@
 #![allow(dead_code)]
 
-use crate::constants::{
-    GLOBAL_ENCAPSULATED_CLASS_NAME, NO_CONFIGURABLE_V4_ISC_OPTION_DEFINITIONS,
-    STANDARD_V4_ISC_OPTION_DEFINITIONS,
-};
 use crate::{
     configs::{
         isc::{ISCDHCP, ISCOptionDefinition, ISCOptionDefinitionType},
         microsoft::{MicrosoftOptionDefinition, MicrosoftOptionDefinitionType},
+    },
+    constants::GLOBAL_ENCAPSULATED_CLASS_NAME,
+    default_options::{
+        NO_CONFIGURABLE_V4_ISC_OPTION_DEFINITIONS, STANDARD_V4_ISC_OPTION_DEFINITIONS,
     },
     helpers::format_string_isc,
 };

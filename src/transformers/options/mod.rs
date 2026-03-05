@@ -12,9 +12,9 @@ use crate::{
             MicrosoftOptionDefinition, MicrosoftOptionDefinitionType, MicrosoftOptionValue,
         },
     },
-    constants::{
-        GLOBAL_ENCAPSULATED_CLASS_NAME, NO_CONFIGURABLE_V4_ISC_OPTION_DEFINITIONS,
-        STANDARD_V4_ISC_OPTION_DEFINITIONS,
+    constants::GLOBAL_ENCAPSULATED_CLASS_NAME,
+    default_options::{
+        NO_CONFIGURABLE_V4_ISC_OPTION_DEFINITIONS, STANDARD_V4_ISC_OPTION_DEFINITIONS,
     },
     helpers::{format_string_isc, vec_bytes_string_to_string},
     transformers::option_definitions::get_isc_option_compat,
