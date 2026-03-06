@@ -8,6 +8,7 @@ use crate::{
     constants::GLOBAL_ENCAPSULATED_CLASS_NAME,
     default_options::{
         NO_CONFIGURABLE_V4_ISC_OPTION_DEFINITIONS, STANDARD_V4_ISC_OPTION_DEFINITIONS,
+        STANDARD_V6_ISC_OPTION_DEFINITIONS,
     },
     helpers::format_string_isc,
 };
@@ -32,7 +33,7 @@ pub fn get_isc_option_compat(
 }
 
 impl ISCDHCP {
-    pub fn transform_option_definitions(
+    pub fn transform_option_definitions_v4(
         &mut self,
         microsoft_option_definitions: &[MicrosoftOptionDefinition],
     ) {
@@ -92,6 +93,59 @@ impl ISCDHCP {
         self.option_definitions.extend(option_defs);
     }
 
+    pub fn transform_option_definitions_v6(
+        &mut self,
+        microsoft_option_definitions: &[MicrosoftOptionDefinition],
+    ) {
+        let mut option_defs: Vec<ISCOptionDefinition> = Vec::new();
+
+        for ms_option_def in microsoft_option_definitions {
+            // We skip the options with the supplier class, they will be processed in the class transformer
+            if ms_option_def
+                .vendor_class
+                .as_deref()
+                .is_some_and(|item| item.len() > 0)
+            {
+                continue;
+            }
+
+            // Skipping options that are already declared by default in the ISC
+            if STANDARD_V6_ISC_OPTION_DEFINITIONS
+                .iter()
+                .any(|item| item.code == ms_option_def.option_id)
+            {
+                continue;
+            }
+
+            // For Microsoft-encapsulated options without a vendor,
+            // you need to add a class layer when passing options.
+            if ms_option_def.r#type == MicrosoftOptionDefinitionType::EncapsulatedData
+                && ms_option_def.vendor_class.is_none()
+            {
+                continue;
+            }
+
+            let option_name = format!("dhcp6.{}", format_string_isc(&ms_option_def.name));
+            let mut option_type = get_isc_option_compat(&ms_option_def.r#type);
+
+            // If the option supports writing multiple values,
+            // it needs to replace the original type.
+            if ms_option_def.multi_valued.unwrap_or_default() {
+                option_type = ISCOptionDefinitionType::Arrays(Box::new(option_type));
+            }
+
+            let option_def = ISCOptionDefinition {
+                code: ms_option_def.option_id,
+                name: option_name,
+                r#type: option_type,
+                vendor_class: None,
+            };
+
+            option_defs.push(option_def);
+        }
+        self.option_definitions.extend(option_defs);
+    }
+
     pub fn write_transformed_option_definitions(&self, config: &mut String) {
         let option_defs: Vec<String> = self
             .option_definitions
@@ -110,27 +164,32 @@ mod test {
     use quick_xml::de::from_str;
 
     use super::_tests::{
-        OPTION_DEFINITIONS_ISC_TEST_TEMPLATE, OPTION_DEFINITIONS_XML_TEST_TEMPLATE,
+        OPTION_DEFINITIONS_ISC_TEST_TEMPLATE_V4, OPTION_DEFINITIONS_XML_TEST_TEMPLATE_V4,
     };
 
     use crate::{
         configs::{ISCDHCP, microsoft::MicrosoftOptionDefinition},
-        transformers::option_definitions::_tests::OPTION_DEFINITIONS_TRANSFORMED_TEST_TEMPLATE,
+        transformers::option_definitions::_tests::{
+            OPTION_DEFINITIONS_ISC_TEST_TEMPLATE_V6,
+            OPTION_DEFINITIONS_TRANSFORMED_TEST_TEMPLATE_V4,
+            OPTION_DEFINITIONS_TRANSFORMED_TEST_TEMPLATE_V6,
+            OPTION_DEFINITIONS_XML_TEST_TEMPLATE_V6,
+        },
     };
 
     #[test]
-    fn transform_option_definitions_test() {
+    fn transform_option_definitions_test_v4() {
         let data: Vec<MicrosoftOptionDefinition> =
-            from_str(OPTION_DEFINITIONS_XML_TEST_TEMPLATE).unwrap();
+            from_str(OPTION_DEFINITIONS_XML_TEST_TEMPLATE_V4).unwrap();
 
         let mut isc_config: ISCDHCP = ISCDHCP::default();
-        isc_config.transform_option_definitions(&data);
+        isc_config.transform_option_definitions_v4(&data);
 
         for (idx, item) in isc_config.option_definitions.iter().enumerate() {
-            if item != &OPTION_DEFINITIONS_ISC_TEST_TEMPLATE[idx] {
+            if item != &OPTION_DEFINITIONS_ISC_TEST_TEMPLATE_V4[idx] {
                 panic!(
                     "{:?}, {:?}",
-                    item, OPTION_DEFINITIONS_ISC_TEST_TEMPLATE[idx]
+                    item, OPTION_DEFINITIONS_ISC_TEST_TEMPLATE_V4[idx]
                 );
             }
         }
@@ -139,19 +198,56 @@ mod test {
     }
 
     #[test]
-    fn write_transformed_option_definitions_test() {
+    fn write_transformed_option_definitions_test_v4() {
         let data: Vec<MicrosoftOptionDefinition> =
-            from_str(OPTION_DEFINITIONS_XML_TEST_TEMPLATE).unwrap();
+            from_str(OPTION_DEFINITIONS_XML_TEST_TEMPLATE_V4).unwrap();
 
         let mut x = String::new();
 
         let mut isc_config: ISCDHCP = ISCDHCP::default();
-        isc_config.transform_option_definitions(&data);
+        isc_config.transform_option_definitions_v4(&data);
         isc_config.write_transformed_option_definitions(&mut x);
 
         assert_eq!(
             x.trim(),
-            OPTION_DEFINITIONS_TRANSFORMED_TEST_TEMPLATE.trim()
+            OPTION_DEFINITIONS_TRANSFORMED_TEST_TEMPLATE_V4.trim()
+        );
+    }
+
+    #[test]
+    fn transform_option_definitions_test_v6() {
+        let data: Vec<MicrosoftOptionDefinition> =
+            from_str(OPTION_DEFINITIONS_XML_TEST_TEMPLATE_V6).unwrap();
+
+        let mut isc_config: ISCDHCP = ISCDHCP::default();
+        isc_config.transform_option_definitions_v6(&data);
+
+        for (idx, item) in isc_config.option_definitions.iter().enumerate() {
+            if item != &OPTION_DEFINITIONS_ISC_TEST_TEMPLATE_V6[idx] {
+                panic!(
+                    "{:?}, {:?}",
+                    item, OPTION_DEFINITIONS_ISC_TEST_TEMPLATE_V6[idx]
+                );
+            }
+        }
+
+        assert!(true);
+    }
+
+    #[test]
+    fn write_transformed_option_definitions_test_v6() {
+        let data: Vec<MicrosoftOptionDefinition> =
+            from_str(OPTION_DEFINITIONS_XML_TEST_TEMPLATE_V6).unwrap();
+
+        let mut x = String::new();
+
+        let mut isc_config: ISCDHCP = ISCDHCP::default();
+        isc_config.transform_option_definitions_v6(&data);
+        isc_config.write_transformed_option_definitions(&mut x);
+
+        assert_eq!(
+            x.trim(),
+            OPTION_DEFINITIONS_TRANSFORMED_TEST_TEMPLATE_V6.trim()
         );
     }
 }

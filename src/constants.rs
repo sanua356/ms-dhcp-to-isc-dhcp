@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+use clap::ValueEnum;
 use lazy_static::lazy_static;
 use regex::Regex;
 
@@ -12,6 +13,11 @@ lazy_static! {
 }
 
 pub static DEFAULT_PADDING: &str = "\n\n";
+#[derive(Debug, PartialEq, Clone, Copy, ValueEnum)]
+pub enum MigratorTypes {
+    V4,
+    V6,
+}
 
 /////////////////// MIGRATION SPECIFIC CONFIGURATION PARAMETERS ///////////////////////////
 pub static GLOBAL_ENCAPSULATED_SPACE: &str = "option space INTERNAL--global-encapsulated-compat;";

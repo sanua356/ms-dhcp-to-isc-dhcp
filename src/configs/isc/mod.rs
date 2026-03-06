@@ -86,7 +86,7 @@ impl ISCDHCP {
             .map(|data| data.items)
             .unwrap_or_default();
 
-        self.transform_option_definitions(&defs);
+        self.transform_option_definitions_v4(&defs);
         self.transform_options(&option_values, &defs);
         self.transform_classes(&classes);
         self.transform_policies(&policies, &defs, &classes);
@@ -114,6 +114,23 @@ impl ISCDHCP {
         self.write_transformed_scopes(&mut output);
         output.push_str(DEFAULT_PADDING);
         self.write_transformed_filters(&mut output);
+
+        output
+    }
+
+    pub fn transform_v6(&mut self, microsoft_config: MicrosoftDHCP) {
+        let defs = microsoft_config
+            .ipv6
+            .option_definitions
+            .map(|data| data.items)
+            .unwrap_or_default();
+        self.transform_option_definitions_v6(&defs);
+    }
+
+    pub fn write_v6(&self) -> String {
+        let mut output: String = String::new();
+
+        self.write_transformed_option_definitions(&mut output);
 
         output
     }

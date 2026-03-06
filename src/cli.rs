@@ -4,6 +4,7 @@ use std::{env, fs, path::PathBuf};
 
 use crate::{
     configs::{ISCDHCP, MicrosoftDHCP},
+    constants::MigratorTypes,
     transliterator::transliterate,
 };
 
@@ -13,6 +14,14 @@ use crate::{
     about = "A command-line utility for converting Microsoft Server 2016-2025 configuration to ISC DHCP."
 )]
 pub struct CLIArgs {
+    #[arg(
+        long,
+        help = "Required. Defines the type of configuration to be converted.",
+        value_enum,
+        default_value_t = MigratorTypes::V4
+    )]
+    pub r#type: MigratorTypes,
+
     #[arg(
         long,
         help = "Required. Specifies the path to the Microsoft Server DHCP configuration file."
@@ -58,8 +67,14 @@ pub fn run_cli(arguments: CLIArgs) {
     }
 
     let mut isc_config: ISCDHCP = ISCDHCP::default();
-    isc_config.transform_v4(microsoft_config);
-    let output = isc_config.write_v4();
+
+    let output = if arguments.r#type == MigratorTypes::V4 {
+        isc_config.transform_v4(microsoft_config);
+        isc_config.write_v4()
+    } else {
+        isc_config.transform_v6(microsoft_config);
+        isc_config.write_v6()
+    };
 
     fs::write(output_filepath, output).unwrap();
 

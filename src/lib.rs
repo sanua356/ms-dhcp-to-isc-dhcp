@@ -11,7 +11,7 @@ mod validators;
 use quick_xml::de::from_str;
 
 #[wasm_bindgen]
-pub fn transform_wasm(input: String, with_transliterate: bool) -> String {
+pub fn transform_wasm(input: String, with_transliterate: bool, is_v4: bool) -> String {
     let mut config_data: String = input;
 
     if with_transliterate {
@@ -30,7 +30,12 @@ pub fn transform_wasm(input: String, with_transliterate: bool) -> String {
     }
 
     let mut isc_config: configs::ISCDHCP = configs::ISCDHCP::default();
-    isc_config.transform_v4(microsoft_config);
 
-    isc_config.write_v4()
+    if is_v4 {
+        isc_config.transform_v4(microsoft_config);
+        isc_config.write_v4()
+    } else {
+        isc_config.transform_v6(microsoft_config);
+        isc_config.write_v6()
+    }
 }
