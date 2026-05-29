@@ -65,4 +65,4 @@ The migration utility cannot migrate the following parameters:
 
 ## License
 
-[GPLv3](https://www.gnu.org/licenses/gpl-3.0.html)
+[ISC](https://www.isc.org/licenses/)
